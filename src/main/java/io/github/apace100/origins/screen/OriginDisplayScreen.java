@@ -311,12 +311,31 @@ public class OriginDisplayScreen extends Screen {
 			y += 14;
 		} else {
 			Registry<ConfiguredPower<?, ?>> powers = ApoliAPI.getPowers();
-			for (Holder<ConfiguredPower<?, ?>> holder : origin.getValidPowers().toList()) {
-				if (!holder.isBound() || holder.get().getData().hidden())
+			// eruto patch: 飛ばした能力を1回だけ記録に出す。
+			//
+			// ⚠⚠ **元の実装は、能力を黙って飛ばす。** ログも代わりの表示も出ないので、
+			// 画面には「説明文まで出て、そこで終わる」としか見えない。
+			// ⚠ **当部は実際にこれで詰まった**（珠の画面に能力が1つも並ばない・全種族全職業）。
+			// ⚠ 読むだけでは原因を詰め切れなかったので、飛ばした理由を機械に言わせる。
+			//
+			// ⚠ 画面は毎フレーム描かれるので、**同じ種族について1回だけ**出す。
+			int skippedUnbound = 0, skippedHidden = 0, skippedNoId = 0, shown = 0;
+			List<Holder<ConfiguredPower<?, ?>>> rawPowers = origin.getValidPowers().toList();
+			for (Holder<ConfiguredPower<?, ?>> holder : rawPowers) {
+				if (!holder.isBound()) {
+					skippedUnbound++;
 					continue;
+				}
+				if (holder.get().getData().hidden()) {
+					skippedHidden++;
+					continue;
+				}
 				Optional<ResourceLocation> id = holder.unwrap().map(Optional::of, powers::getResourceKey).map(ResourceKey::location);
-				if (id.isEmpty())
+				if (id.isEmpty()) {
+					skippedNoId++;
 					continue;
+				}
+				shown++;
 				ConfiguredPower<?, ?> p = holder.get();
 				FormattedCharSequence name = Language.getInstance().getVisualOrder(this.font.substrByWidth(p.getData().getName().withStyle(ChatFormatting.UNDERLINE), textWidth));
 				Component desc = p.getData().getDescription();
@@ -342,12 +361,52 @@ public class OriginDisplayScreen extends Screen {
 				}
 				y += 14;
 			}
+			// eruto patch: この種族について1回だけ、内訳を記録に出す（上の注記を参照）。
+			this.logPowerTally(origin, rawPowers.size(), shown, skippedUnbound, skippedHidden, skippedNoId);
 		}
 		y += this.scrollPos;
 		this.currentMaxScroll = y - 14 - (this.guiTop + 158);
 		if (this.currentMaxScroll < 0) {
 			this.currentMaxScroll = 0;
 		}
+	}
+
+	/** eruto patch: 一度出した内訳を控えておく（下の {@link #logPowerTally} が使う）。 */
+	private static final java.util.Set<String> LOGGED_TALLIES = new java.util.HashSet<>();
+
+	/**
+	 * eruto patch: 能力を何件飛ばしたかを、種族ごとに1回だけ記録へ出す。
+	 *
+	 * <p>⚠⚠ 上流は3つの理由（{@code !isBound()} ／ {@code hidden} ／ id が引けない）で
+	 * 能力を飛ばすが、⚠ <b>どれも黙って飛ばす</b>。画面には「説明文で終わっている」としか
+	 * 見えず、⚠ <b>ログにも1行も出ない</b>。
+	 *
+	 * <p>⚠ 画面は毎フレーム描かれるので、<b>同じ種族について1回だけ</b>出す。
+	 * ⚠ 飛ばした件数が 0 のときは何も言わない（鳴り続ける記録は本物を埋める）。
+	 */
+	private void logPowerTally(Origin origin, int raw, int shown, int unbound, int hidden, int noId) {
+		// 鳴らす条件は2つ:
+		//
+		//   ⑴ 解決できない／id が引けない が1件でもある
+		//        … ⚠ 上流が黙って飛ばす形。
+		//   ⑵ ⚠⚠ **一覧そのものが空**（raw == 0）
+		//        … ⚠ 2026-08-27 の走行で `S2CDynamicRegistryPacket.decode` の中の
+		//          `ImmutableList$Builder.add(null)` が NullPointerException になり、
+		//          ⚠⚠ **一覧の要素が null になる**のを1回つかまえている（間欠）。
+		//          ⚠ **そのときは飛ばした件数が全部 0 になる**ので、⑴ だけでは鳴らない。
+		//
+		// ⚠ `hidden` だけなら黙る（当部が意図して隠している分）。
+		// ⚠ `origins:human` は本当に能力 0 なので ⑵ で1度だけ鳴るが、
+		//   ⚠ **出る行に raw も shown も載るので、読めば正常と分かる**（黙らせない）。
+		if (unbound == 0 && noId == 0 && raw != 0)
+			return;
+		Object key = OriginsAPI.getOriginsRegistry().getKey(origin);
+		// ⚠ 画面は毎フレーム描かれるので、**同じ内訳につき1回だけ**出す。
+		if (!LOGGED_TALLIES.add(key + "/" + raw + "/" + shown + "/" + unbound + "/" + hidden + "/" + noId))
+			return;
+		Origins.LOGGER.warn(
+				"[eruto] 種族 {} の能力: 一覧 {} 本 → 出した {} ／ 解決できない {} ／ 隠し {} ／ id が引けない {}",
+				key, raw, shown, unbound, hidden, noId);
 	}
 
 	private class RenderedBadge {
