@@ -379,6 +379,23 @@ public class OriginDisplayScreen extends Screen {
 					graphics.drawString(this.font, name, x, y, 0xFFFFFF, false);
 					int tw = this.font.width(name);
 					Collection<Badge> badges = BadgeManager.getPowerBadges(id.get());
+					// ⚠⚠ **印が2つ以上なら、その中身を1回だけ記録に出す**（2026-09-01）。
+					//    ⚠ 依頼者に「G や H の印がどれも2つ付く」と言われたが、
+					//    ⚠⚠ **JSON の側は1つ**だった（実物で数えた）。
+					//    ⚠ つまり**実行時に増えている**が、
+					//    ⚠ `BadgeManager` を3回読んでも増える経路が分からなかった。
+					//    ⚠ **推測を3回外したら機械に聞く**（machine-global-rules の引き金）。
+					if (badges.size() > 1) {
+						StringBuilder sb = new StringBuilder();
+						for (Badge one : badges) {
+							sb.append(sb.length() == 0 ? "" : ", ");
+							sb.append(one == null ? "(null)" : String.valueOf(one.spriteId()));
+						}
+						if (LOGGED_TALLIES.add("badges/" + id.get() + "/" + badges.size())) {
+							Origins.LOGGER.warn("[eruto] badges power={} count={} sprites={}",
+									id.get(), badges.size(), sb);
+						}
+					}
 					int xStart = x + tw + 4;
 					int bi = 0;
 					for (Badge badge : badges) {
