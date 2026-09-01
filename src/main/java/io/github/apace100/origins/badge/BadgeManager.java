@@ -68,6 +68,23 @@ public final class BadgeManager {
 	}
 
 	public static void putPowerBadge(ResourceLocation powerId, Badge badge) {
+		// ⚠⚠ **当部の直し（2026-09-01）: 同じ印を2回入れない。**
+		//
+		//    ⚠ **実機で測った**: 部員の画面で「G」「H」やピクシーの印が**きっちり2倍**に出た
+		//    （`origins:shulker_inventory` count=2 sprites=key_g.png, key_g.png ／
+		//     `medievalorigins:pixie/flight` count=10＝5つが2倍）。
+		//    ⚠ JSON の側は1つずつなので、⚠⚠ **入れる側が2回走っている。**
+		//
+		//    ⚠ 経路: クライアントは**自分の data を読んで足す**のと、
+		//    ⚠⚠ **サーバから受け取って（clear してから）足す**のと2つ持っている。
+		//    ⚠ 受け取りが先に来ると、後から来る自分の読み込みが**もう一度足す**。
+		//    ⚠ **順序で決まるので、同じ jar でもクライアントによって出たり出なかったりする**
+		//    （実際に2台で分かれた）。
+		//
+		//    ⚠ `BADGES` は `LinkedListMultimap` で**重複を許す**。
+		//    ⚠ ここで弾くのがいちばん確実——⚠ **どの経路から来ても効く。**
+		if (BADGES.containsEntry(powerId, badge))
+			return;
 		BADGES.put(powerId, badge);
 	}
 
