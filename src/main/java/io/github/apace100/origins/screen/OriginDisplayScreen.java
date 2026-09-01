@@ -320,10 +320,15 @@ public class OriginDisplayScreen extends Screen {
 			//
 			// ⚠ 画面は毎フレーム描かれるので、**同じ種族について1回だけ**出す。
 			int skippedUnbound = 0, skippedHidden = 0, skippedNoId = 0, shown = 0;
+			// ⚠⚠ **どの能力が解決できていないかを控える**（2026-09-01 追加）。
+			//    ⚠ 未結合の Holder でも `unwrap()` は **id の側（左）を返す**ので、
+			//    ⚠ **名前は取れる**。⚠ 件数だけでは「どれが」を追えず、2度手間になった。
+			java.util.List<String> unboundIds = new java.util.ArrayList<>();
 			List<Holder<ConfiguredPower<?, ?>>> rawPowers = origin.getValidPowers().toList();
 			for (Holder<ConfiguredPower<?, ?>> holder : rawPowers) {
 				if (!holder.isBound()) {
 					skippedUnbound++;
+					holder.unwrap().ifLeft(k -> unboundIds.add(k.location().toString()));
 					continue;
 				}
 				if (holder.get().getData().hidden()) {
@@ -362,7 +367,8 @@ public class OriginDisplayScreen extends Screen {
 				y += 14;
 			}
 			// eruto patch: この種族について1回だけ、内訳を記録に出す（上の注記を参照）。
-			this.logPowerTally(origin, rawPowers.size(), shown, skippedUnbound, skippedHidden, skippedNoId);
+			this.logPowerTally(origin, rawPowers.size(), shown, skippedUnbound, skippedHidden,
+					skippedNoId, unboundIds);
 		}
 		y += this.scrollPos;
 		this.currentMaxScroll = y - 14 - (this.guiTop + 158);
@@ -384,7 +390,8 @@ public class OriginDisplayScreen extends Screen {
 	 * <p>⚠ 画面は毎フレーム描かれるので、<b>同じ種族について1回だけ</b>出す。
 	 * ⚠ 飛ばした件数が 0 のときは何も言わない（鳴り続ける記録は本物を埋める）。
 	 */
-	private void logPowerTally(Origin origin, int raw, int shown, int unbound, int hidden, int noId) {
+	private void logPowerTally(Origin origin, int raw, int shown, int unbound, int hidden,
+			int noId, java.util.List<String> unboundIds) {
 		// 鳴らす条件は2つ:
 		//
 		//   ⑴ 解決できない／id が引けない が1件でもある
@@ -400,13 +407,29 @@ public class OriginDisplayScreen extends Screen {
 		//   ⚠ **出る行に raw も shown も載るので、読めば正常と分かる**（黙らせない）。
 		if (unbound == 0 && noId == 0 && raw != 0)
 			return;
+		// ⚠⚠ **逆引きの答えを鵜呑みにしない**（2026-09-01）。
+		//    ⚠ `getKey(origin)` は**そのオブジェクトがレジストリに居るか**を引く。
+		//    ⚠⚠ 実際に `一覧 6〜18 本` の種族について `origins:empty` が出た——
+		//    ⚠ **描いている実体が、いまのレジストリの物ではない**ことを示している。
+		//    ⚠ だから**種族が自分で名乗る名前も併記する**（逆引きに頼らない2本目の入口）。
 		Object key = OriginsAPI.getOriginsRegistry().getKey(origin);
+		String selfName;
+		try {
+			selfName = origin.getName().getString();
+		} catch (Exception e) {
+			selfName = "（名前が取れない: " + e + "）";
+		}
 		// ⚠ 画面は毎フレーム描かれるので、**同じ内訳につき1回だけ**出す。
-		if (!LOGGED_TALLIES.add(key + "/" + raw + "/" + shown + "/" + unbound + "/" + hidden + "/" + noId))
+		if (!LOGGED_TALLIES.add(key + "/" + selfName + "/" + raw + "/" + shown + "/"
+				+ unbound + "/" + hidden + "/" + noId))
 			return;
 		Origins.LOGGER.warn(
-				"[eruto] 種族 {} の能力: 一覧 {} 本 → 出した {} ／ 解決できない {} ／ 隠し {} ／ id が引けない {}",
-				key, raw, shown, unbound, hidden, noId);
+				"[eruto] origin key={} name={} powers raw={} shown={} unbound={} hidden={} noId={}",
+				key, selfName, raw, shown, unbound, hidden, noId);
+		// ⚠⚠ **どれが解決できていないかを名指しする。** 件数だけでは追えない。
+		if (!unboundIds.isEmpty()) {
+			Origins.LOGGER.warn("[eruto]   unbound powers: {}", String.join(", ", unboundIds));
+		}
 	}
 
 	private class RenderedBadge {
