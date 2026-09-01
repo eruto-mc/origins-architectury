@@ -413,11 +413,22 @@ public class OriginDisplayScreen extends Screen {
 		//    ⚠ **描いている実体が、いまのレジストリの物ではない**ことを示している。
 		//    ⚠ だから**種族が自分で名乗る名前も併記する**（逆引きに頼らない2本目の入口）。
 		Object key = OriginsAPI.getOriginsRegistry().getKey(origin);
+		// ⚠⚠ **診断の記録は英語と id だけにする**（2026-09-01・依頼者の指示）。
+		//    「⚠ 私が読むためのものは英語、⚠ **あなたと部員に見せるものは日本語**」。
+		//    ⚠ **画面に出る文は日本語のまま**——ここはログだけの話。
+		//
+		//    ⚠ **なぜ表示名を出さないか**: 表示名は翻訳された日本語で、
+		//    ⚠ Minecraft のログの出力は機械の既定の文字コードを使う（当部の Windows は cp932）。
+		//    ⚠⚠ **UTF-8 前提の道具で引くと読めない**——2026-09-01 に私がそれで
+		//    「0 件＝正常」と誤報した。⚠ **翻訳の鍵なら ASCII なので、どの道具でも引ける。**
 		String selfName;
 		try {
-			selfName = origin.getName().getString();
+			net.minecraft.network.chat.ComponentContents c = origin.getName().getContents();
+			selfName = (c instanceof net.minecraft.network.chat.contents.TranslatableContents t)
+					? t.getKey()                       // 例: origin.origins.human.name
+					: "(not-translatable)";
 		} catch (Exception e) {
-			selfName = "（名前が取れない: " + e + "）";
+			selfName = "(name-failed:" + e.getClass().getSimpleName() + ")";
 		}
 		// ⚠ 画面は毎フレーム描かれるので、**同じ内訳につき1回だけ**出す。
 		if (!LOGGED_TALLIES.add(key + "/" + selfName + "/" + raw + "/" + shown + "/"
