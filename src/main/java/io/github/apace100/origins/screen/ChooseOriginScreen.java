@@ -1,6 +1,7 @@
 package io.github.apace100.origins.screen;
 
 import io.github.apace100.origins.Origins;
+import net.erutobusiness.shiftingorigins.CancelClient;
 import io.github.apace100.origins.origin.Impact;
 import io.github.apace100.origins.registry.ModItems;
 import io.github.edwinmindcraft.origins.api.OriginsAPI;
@@ -103,7 +104,7 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	private void openNextLayerScreen() {
 		// eruto patch: 「選ぶ」を押した＝もうやめる話ではない。
 		// ⚠ 残したままだと、次に `/origin gui` 等で開いた画面まで閉じられてしまう。
-		OriginSelectionCancel.clear();
+		CancelClient.clear();
 		Minecraft.getInstance().setScreen(new WaitForNextLayerScreen(this.layerList, this.currentLayerIndex, this.showDirtBackground));
 	}
 
@@ -115,11 +116,11 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	 * {@code SelectionInvulnerabilityMixin} が全ダメージを無効にする＝<b>無敵で詰む</b>。
 	 *
 	 * <p>⚠⚠ だから<b>既定は上流のまま（閉じられない）</b>で、
-	 * サーバーが「珠を使った直後」だけ印を立てる（{@link OriginSelectionCancel}）。
+	 * サーバーが「珠を使った直後」だけ印を立てる（{@link CancelClient}）。
 	 */
 	@Override
 	public boolean shouldCloseOnEsc() {
-		return OriginSelectionCancel.isCancelable();
+		return CancelClient.isCancelable();
 	}
 
 	/**
@@ -136,8 +137,8 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	 */
 	@Override
 	public void onClose() {
-		if (OriginSelectionCancel.isCancelable()) {
-			OriginSelectionCancel.requestCancel();
+		if (CancelClient.isCancelable()) {
+			CancelClient.requestCancel();
 		}
 		this.minecraft.setScreen(null);
 	}
@@ -175,7 +176,7 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 		}).bounds(this.guiLeft + windowWidth / 2 - 50, this.guiTop + windowHeight + 5, 100, 20).build());
 		// eruto patch: やめられる場面だけ、× ボタンを窓の右上に置く。
 		// ⚠ 位置は上の「＞」と同じ列（`guiLeft + windowWidth + 20`）の一番上。
-		if (OriginSelectionCancel.isCancelable()) {
+		if (CancelClient.isCancelable()) {
 			this.addRenderableWidget(Button.builder(Component.literal("×"), b -> this.onClose())
 					.bounds(this.guiLeft + windowWidth + 20, this.guiTop, 20, 20).build());
 		}

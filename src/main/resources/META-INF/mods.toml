@@ -3,6 +3,12 @@ loaderVersion="[47,)"
 license="MIT"
 issueTrackerURL="https://github.com/EdwinMindcraft/origins-architectury/issues"
 
+# ⚠⚠ **当部の mixin の設定**（2026-09-01 に `shifting_origins` を受け入れた）。
+#    ⚠ 上流の `origins.mixins.json` は build.gradle が付ける（`MixinConfigs` の manifest）ので、
+#    ⚠ ここには書かない。⚠ **こちらは manifest に入らないので、明示が要る。**
+[[mixins]]
+config="shiftingorigins.mixins.json"
+
 [[mods]]
 modId="origins"
 version="${version}"
@@ -39,4 +45,76 @@ This mod adds several origins with passive abilities to the game, which you can 
     mandatory=true
     versionRange="[1.20.1-2.9,)"
     ordering="NONE"
+    side="BOTH"
+# ── ⚠⚠ ここから下は当部が受け入れた `shifting_origins`（2026-09-01）──
+#
+# ⚠ **依頼者の意向**: 「⚠ 1つの MOD に1つの実装として」。
+# ⚠ 以前は別の jar・別のビルドで、⚠⚠ **origins を mixin で外から書き換えていた**。
+# ⚠ 分けたままだと、素直に畳もうとした瞬間に**循環参照**になり、
+# ⚠ 「登録する口」という回り道が要った——⚠⚠ **単位が2つ在ること自体が原因**だった。
+#
+# ⚠ **modId はそのまま残す。** 変えると datapack・設定・部員のワールドが指す先が消える。
+[[mods]]
+modId="shiftingorigins"
+# ⚠⚠ **jarVersion の差し込み（shifting_origins が単体だった頃の書き方）は使えない**（2026-09-01）。
+#    ⚠ origins の mods.toml は gradle が Groovy のテンプレートとして展開するので、
+#    ⚠⚠ **その変数が定義されておらず落ちる**
+#    （Missing property (file) for Groovy template expansion）。
+#    ⚠⚠ **コメントに書いても落ちる**——展開はファイル全体に当たる。実際に1回踏んだ。
+#    ⚠ 上の origins と同じ差し込みを使う。⚠ **同じ jar なので同じ版でよい。**
+version="${version}"
+displayName="Shifting Origins"
+authors="erutobusiness"
+description='''
+World-3's Origins overhaul. Everything here exists so that origins and classes can be
+CHANGED LATER instead of being a one-time pick at spawn, and so that they still make sense
+next to the 300+ other mods in the pack.
+
+  * Class/origin powers are handed out and taken away at runtime (ClassPowers), because
+    overriding the upstream JSON definitions from a datapack did not take effect.
+  * The multi-mine powers (lumberjack felling, miner ore vein) break a few blocks at a time
+    instead of all in one tick.
+  * Club-made powers: ore vein mining, keen eye, iron-tier light armor, tireless.
+  * Cleric potion effects spread to nearby players.
+
+Server side is authoritative, but the mod must be on BOTH sides: it registers Apoli power
+factories, and the registry is synced on login.
+'''
+
+[[dependencies.shiftingorigins]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.shiftingorigins]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.20.2)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.shiftingorigins]]
+    modId="origins_classes"
+    mandatory=true
+    versionRange="[1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.shiftingorigins]]
+    modId="harvest_with_ease"
+    mandatory=false
+    versionRange="[9,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# ⚠ **必須にしてある。** LavaBottleDrink が実行時に toughasnails.api.thirst を触るので、
+#   無い環境では右クリックした瞬間に NoClassDefFoundError で落ちる。
+#   ⚠ mandatory=false にすると「入っていないと落ちる」を起動時に気づけない。
+[[dependencies.shiftingorigins]]
+    modId="toughasnails"
+    mandatory=true
+    versionRange="[9,)"
+    ordering="AFTER"
     side="BOTH"

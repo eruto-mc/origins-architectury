@@ -53,31 +53,6 @@ public class OrbOfOriginItem extends Item {
 	 */
 	private static final int ERUTO_STACK_LIMIT = 64;
 
-	/**
-	 * eruto patch: 珠を使う前後で呼ばれる口（2026-09-01 に mixin から畳んだ）。
-	 *
-	 * <p>⚠⚠ <b>なぜ口にするか</b>: 中身（やめられるようにする控え）は
-	 * {@code shiftingorigins} が持っており、⚠ ここから名前で呼ぶと
-	 * ⚠⚠ <b>循環参照になって組み立てられない</b>。⚠ 向きを逆にして、
-	 * <b>あちらが起動時に登録する</b>形にしてある。
-	 *
-	 * <p>⚠ 登録されていなければ<b>何もしない</b>——その MOD を外した構成でも壊れない。
-	 */
-	public interface UseListener {
-		/** 使う直前（⚠ 層が空にされる前に控えるため）。 */
-		void beforeUse(ServerPlayer player, ItemStack orb, boolean consumed);
-
-		/** 使った直後（⚠ やめられることをクライアントへ伝えるため）。 */
-		void afterUse(ServerPlayer player);
-	}
-
-	private static UseListener useListener = null;
-
-	/** eruto patch: 珠を使う前後の中身を登録する（{@code shiftingorigins} が起動時に呼ぶ）。 */
-	public static void setUseListener(UseListener value) {
-		useListener = value;
-	}
-
 	public OrbOfOriginItem() {
 		super(new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
 	}
@@ -93,8 +68,11 @@ public class OrbOfOriginItem extends Item {
 	public InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		// eruto patch: 層が空にされる**前に**控える（やめられるようにするため）。
-		if (!level.isClientSide() && useListener != null && player instanceof ServerPlayer sp0) {
-			useListener.beforeUse(sp0, sp0.getItemInHand(hand), !sp0.getAbilities().instabuild);
+		// ⚠ 2026-09-01 に `shifting_origins` を同じソースの木へ受け入れたので、直接呼ぶ。
+		//   ⚠ それまでは「登録する口」を挟んでいた——⚠⚠ **単位が2つ在ったせいの回り道**。
+		if (!level.isClientSide() && player instanceof ServerPlayer sp0) {
+			net.erutobusiness.shiftingorigins.OriginChangeCancel.remember(
+					sp0, sp0.getItemInHand(hand), !sp0.getAbilities().instabuild);
 		}
 		if (!level.isClientSide()) {
 			IOriginContainer.get(player).ifPresent(container -> {
@@ -121,8 +99,8 @@ public class OrbOfOriginItem extends Item {
 			stack.shrink(1);
 		}
 		// eruto patch: 使い終えた合図（やめられることをクライアントへ伝える）。
-		if (!level.isClientSide() && useListener != null && player instanceof ServerPlayer sp1) {
-			useListener.afterUse(sp1);
+		if (!level.isClientSide() && player instanceof ServerPlayer sp1) {
+			net.erutobusiness.shiftingorigins.OriginChangeCancel.announce(sp1);
 		}
 		return InteractionResultHolder.consume(stack);
 	}

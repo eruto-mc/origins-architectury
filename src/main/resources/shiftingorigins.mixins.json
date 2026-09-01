@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.erutobusiness.shiftingorigins.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "origins.refmap.json",
+  "mixins": [
+    "MultiMinePowerMixin",
+    "SlotMixin",
+    "InventoryMixin",
+    "ItemMixin",
+    "LivingEntityMixin",
+    "BoundTickingBlockEntityMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
