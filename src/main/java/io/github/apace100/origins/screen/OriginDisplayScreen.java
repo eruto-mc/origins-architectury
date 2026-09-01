@@ -412,7 +412,15 @@ public class OriginDisplayScreen extends Screen {
 		//    ⚠⚠ 実際に `一覧 6〜18 本` の種族について `origins:empty` が出た——
 		//    ⚠ **描いている実体が、いまのレジストリの物ではない**ことを示している。
 		//    ⚠ だから**種族が自分で名乗る名前も併記する**（逆引きに頼らない2本目の入口）。
+		// ⚠⚠ **`getKey` は「見つからない」を `null` ではなく既定のキーで返す**（2026-09-01）。
+		//    `OriginRegisters.java:42` が `.setDefaultKey(Origins.identifier("empty"))` を
+		//    指定しているため、⚠ **登録されていない実体を引くと `origins:empty` が返る。**
+		//    ⚠ 実際、⚠⚠ **一覧 6〜18 本の種族について `origins:empty` が出た**——
+		//    ⚠ 「逆引きが壊れている」ではなく「**その実体はいまのレジストリに居ない**」が正しい読み。
+		//    ⚠ 紛らわしいので、⚠ **居るかどうかを別の欄で直接出す。**
 		Object key = OriginsAPI.getOriginsRegistry().getKey(origin);
+		boolean inRegistry = OriginsAPI.getOriginsRegistry().stream()
+				.anyMatch(o -> o == origin);
 		// ⚠⚠ **診断の記録は英語と id だけにする**（2026-09-01・依頼者の指示）。
 		//    「⚠ 私が読むためのものは英語、⚠ **あなたと部員に見せるものは日本語**」。
 		//    ⚠ **画面に出る文は日本語のまま**——ここはログだけの話。
@@ -431,12 +439,13 @@ public class OriginDisplayScreen extends Screen {
 			selfName = "(name-failed:" + e.getClass().getSimpleName() + ")";
 		}
 		// ⚠ 画面は毎フレーム描かれるので、**同じ内訳につき1回だけ**出す。
-		if (!LOGGED_TALLIES.add(key + "/" + selfName + "/" + raw + "/" + shown + "/"
-				+ unbound + "/" + hidden + "/" + noId))
+		if (!LOGGED_TALLIES.add(key + "/" + selfName + "/" + inRegistry + "/" + raw + "/"
+				+ shown + "/" + unbound + "/" + hidden + "/" + noId))
 			return;
 		Origins.LOGGER.warn(
-				"[eruto] origin key={} name={} powers raw={} shown={} unbound={} hidden={} noId={}",
-				key, selfName, raw, shown, unbound, hidden, noId);
+				"[eruto] origin key={} name={} inRegistry={} powers raw={} shown={} "
+						+ "unbound={} hidden={} noId={}",
+				key, selfName, inRegistry, raw, shown, unbound, hidden, noId);
 		// ⚠⚠ **どれが解決できていないかを名指しする。** 件数だけでは追えない。
 		if (!unboundIds.isEmpty()) {
 			Origins.LOGGER.warn("[eruto]   unbound powers: {}", String.join(", ", unboundIds));
