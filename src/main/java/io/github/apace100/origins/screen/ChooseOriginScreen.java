@@ -101,12 +101,45 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	}
 
 	private void openNextLayerScreen() {
+		// eruto patch: 「選ぶ」を押した＝もうやめる話ではない。
+		// ⚠ 残したままだと、次に `/origin gui` 等で開いた画面まで閉じられてしまう。
+		OriginSelectionCancel.clear();
 		Minecraft.getInstance().setScreen(new WaitForNextLayerScreen(this.layerList, this.currentLayerIndex, this.showDirtBackground));
 	}
 
+	/**
+	 * eruto patch: <b>やめてよい場面だけ</b> Esc を開ける。
+	 *
+	 * <p>⚠ 上流は {@code false} 固定で、閉じる手段がまったく無い。理由はある——
+	 * 層を空にしたまま閉じると {@code hasAllOrigins()} が偽のまま残り、
+	 * {@code SelectionInvulnerabilityMixin} が全ダメージを無効にする＝<b>無敵で詰む</b>。
+	 *
+	 * <p>⚠⚠ だから<b>既定は上流のまま（閉じられない）</b>で、
+	 * サーバーが「珠を使った直後」だけ印を立てる（{@link OriginSelectionCancel}）。
+	 */
 	@Override
 	public boolean shouldCloseOnEsc() {
-		return false;
+		return OriginSelectionCancel.isCancelable();
+	}
+
+	/**
+	 * eruto patch: 閉じるときは必ずサーバーへ「やめる」を送る。
+	 *
+	 * <p>⚠ 閉じ方は2つとも ここに集まる:
+	 * <pre>
+	 *   Esc  → Screen.keyPressed → shouldCloseOnEsc()==true → onClose()
+	 *   ×    → ボタンの処理 ────────────────────────────────→ onClose()
+	 * </pre>
+	 *
+	 * <p>⚠ 「選ぶ」を押した経路はここを通らない（{@code openNextLayerScreen()} が
+	 * 画面を差し替えるので {@code onClose()} は呼ばれない）。⚠ 印はあちらで下ろしている。
+	 */
+	@Override
+	public void onClose() {
+		if (OriginSelectionCancel.isCancelable()) {
+			OriginSelectionCancel.requestCancel();
+		}
+		this.minecraft.setScreen(null);
 	}
 
 	@Override
@@ -140,6 +173,12 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 			// The below is necessary for opening the Waiting For Powers Screen.
 			this.openNextLayerScreen();
 		}).bounds(this.guiLeft + windowWidth / 2 - 50, this.guiTop + windowHeight + 5, 100, 20).build());
+		// eruto patch: やめられる場面だけ、× ボタンを窓の右上に置く。
+		// ⚠ 位置は上の「＞」と同じ列（`guiLeft + windowWidth + 20`）の一番上。
+		if (OriginSelectionCancel.isCancelable()) {
+			this.addRenderableWidget(Button.builder(Component.literal("×"), b -> this.onClose())
+					.bounds(this.guiLeft + windowWidth + 20, this.guiTop, 20, 20).build());
+		}
 	}
 
 	@Override
