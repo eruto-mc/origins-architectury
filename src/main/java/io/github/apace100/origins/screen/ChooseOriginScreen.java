@@ -45,7 +45,39 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 		this.originSelection = new ArrayList<>(10);
 		Player player = Minecraft.getInstance().player;
 		Holder<OriginLayer> currentLayer = layerList.get(currentLayerIndex);
-		currentLayer.value().origins(Objects.requireNonNull(player)).forEach(origin -> {
+		// ⚠⚠ **当部の直し（2026-09-01）: 層から取った種族を、id でレジストリから引き直す。**
+		//
+		//    ⚠ **なぜ要るか（実機で測った）**: 層が抱えている `Holder<Origin>` は
+		//    ⚠ **層が復号された時点のレジストリの物**で、⚠⚠ **その後レジストリが作り直されると
+		//    永久に古い世代を指したまま**になる（`S2CDynamicRegistryPacket.handle` が
+		//    `start == 0` のとき `instance.reset(key)` でレジストリのオブジェクトごと作り直す）。
+		//
+		//    ⚠ 2026-09-01 の走行で、⚠⚠ **全種族が `inRegistry=false`・能力が `unbound == raw`**
+		//    （＝1本残らず未結合）だった。⚠ 画面には**説明文までしか出ず、能力が1つも並ばない。**
+		//
+		//    ⚠ **Oキーの画面（`ViewOriginScreen:42`）は最初から引き直している。**
+		//    ⚠ こちらだけが引き直していなかった——⚠⚠ **上流の中の食い違い**なので、揃える。
+		//
+		//    ⚠ 能力（`Origin` の中の `HolderSet`）も、引き直した種族の物になるので一緒に直る
+		//    （⚠ 能力が古かったのは、⚠ **古い種族が古い能力を抱えていた**ため）。
+		//
+		//    ⚠ 引き直せないとき（id が取れない／レジストリに無い）は**元の物をそのまま使う**——
+		//    ⚠⚠ **落とさない。** 出ないより、古くても出るほうがまし。
+		net.minecraft.core.Registry<Origin> originsRegistry = OriginsAPI.getOriginsRegistry();
+		currentLayer.value().origins(Objects.requireNonNull(player)).forEach(rawOrigin -> {
+			Holder<Origin> origin = rawOrigin;
+			ResourceKey<Origin> id = rawOrigin.unwrap()
+					.map(Optional::of, originsRegistry::getResourceKey).orElse(null);
+			if (id != null) {
+				Optional<Holder.Reference<Origin>> fresh = originsRegistry.getHolder(id);
+				if (fresh.isPresent() && fresh.get().isBound()) {
+					if (fresh.get().value() != rawOrigin.value()) {
+						Origins.LOGGER.warn(
+								"[eruto] re-resolved stale origin {} from the layer", id.location());
+					}
+					origin = fresh.get();
+				}
+			}
 			if (origin.isBound() && origin.value().isChoosable()) {
 				ItemStack displayItem = origin.value().getIcon();
 				if (displayItem.getItem() == Items.PLAYER_HEAD) {
