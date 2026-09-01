@@ -325,7 +325,37 @@ public class OriginDisplayScreen extends Screen {
 			//    ⚠ **名前は取れる**。⚠ 件数だけでは「どれが」を追えず、2度手間になった。
 			java.util.List<String> unboundIds = new java.util.ArrayList<>();
 			List<Holder<ConfiguredPower<?, ?>>> rawPowers = origin.getValidPowers().toList();
-			for (Holder<ConfiguredPower<?, ?>> holder : rawPowers) {
+			for (Holder<ConfiguredPower<?, ?>> raw : rawPowers) {
+				// ⚠⚠ **当部の直し（2026-09-01）: 結合していない能力を、id で引き直す。**
+				//
+				//    ⚠ **段5 と同じ形を1段下でやる。** 段5 は**種族**を層から引き直したが、
+				//    ⚠⚠ **種族が抱えている能力の Holder は引き直していなかった。**
+				//
+				//    ⚠ **なぜ要るか（実機で測った・2026-09-01）**: 同じ jar・同じデータで
+				//    ⚠⚠ **16:36 の走行は 26 件が結合せず、16:58 の走行は 0 件**だった。
+				//    ⚠ **間欠**——`S2CDynamicRegistryPacket.handle` が `start == 0` のとき
+				//    `instance.reset(key)` で**レジストリのオブジェクトごと**作り直すので、
+				//    ⚠ **種族を復号した後に能力のレジストリが作り直されると、
+				//    その種族が抱えている Holder は永久に古い世代を指したまま**になる。
+				//
+				//    ⚠ 画面には「説明文で終わっている」としか見えない
+				//    （シュルクなら「硬い皮膚」だけ・ネコ獣人なら3つだけ、が実際に出た）。
+				//
+				//    ⚠ 引き直せないとき（id が引けない／レジストリに無い）は**元のまま**進み、
+				//    ⚠ 下の記録が名指しする。⚠⚠ **黙って落とさない。**
+				Holder<ConfiguredPower<?, ?>> holder = raw;
+				if (!holder.isBound()) {
+					Optional<ResourceKey<ConfiguredPower<?, ?>>> key = raw.unwrap().left();
+					if (key.isPresent()) {
+						Optional<Holder.Reference<ConfiguredPower<?, ?>>> fresh =
+								powers.getHolder(key.get());
+						if (fresh.isPresent() && fresh.get().isBound()) {
+							holder = fresh.get();
+							Origins.LOGGER.warn("[eruto] re-resolved stale power {}",
+									key.get().location());
+						}
+					}
+				}
 				if (!holder.isBound()) {
 					skippedUnbound++;
 					holder.unwrap().ifLeft(k -> unboundIds.add(k.location().toString()));
@@ -449,6 +479,41 @@ public class OriginDisplayScreen extends Screen {
 		// ⚠⚠ **どれが解決できていないかを名指しする。** 件数だけでは追えない。
 		if (!unboundIds.isEmpty()) {
 			Origins.LOGGER.warn("[eruto]   unbound powers: {}", String.join(", ", unboundIds));
+			// ⚠⚠ **能力のレジストリに在るかを1件ずつ聞く**（2026-09-01）。
+			//
+			//    ⚠ **なぜ要るか**: 「結合していない」には2つの原因が在り、
+			//    ⚠ **直し方が正反対**なのに、⚠⚠ **画面からは見分けが付かない**:
+			//
+			//      ⓐ レジストリにその id が**無い**
+			//         … ⚠ 読み込みか同期で落ちている。⚠ **混ぜ方（データ）の問題。**
+			//      ⓑ レジストリに**在るのに**結合していない
+			//         … ⚠ 種族を復号した時点でまだ登録されていなかった。
+			//         ⚠⚠ **順序の問題**で、データを直しても直らない。
+			//
+			//    ⚠ 2026-09-01 に、ⓐとⓑのどちらかを4回推測して4回とも決められなかった。
+			//    ⚠ **推測を3回外したら機械に聞く**（machine-global-rules の引き金）。
+			int inReg = 0;
+			StringBuilder absent = new StringBuilder();
+			for (String id : unboundIds) {
+				boolean has = false;
+				try {
+					net.minecraft.resources.ResourceLocation rl =
+							new net.minecraft.resources.ResourceLocation(id);
+					has = io.github.edwinmindcraft.apoli.api.ApoliAPI.getPowers()
+							.containsKey(rl);
+				} catch (Exception ignored) {
+					// ⚠ 引けないときは「無い」側に数える（甘く見ない）
+				}
+				if (has) {
+					inReg++;
+				} else {
+					absent.append(absent.length() == 0 ? "" : ", ").append(id);
+				}
+			}
+			Origins.LOGGER.warn(
+					"[eruto]   power registry: total={} unbound-but-present={} absent={}",
+					io.github.edwinmindcraft.apoli.api.ApoliAPI.getPowers().size(),
+					inReg, absent.length() == 0 ? "(none)" : absent);
 		}
 	}
 
