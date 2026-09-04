@@ -53,6 +53,17 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("hover",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /**
+   * 溶岩を水と同じように泳ぐ（{@link LavaSwim}）。
+   *
+   * <p>⚠ <b>印だけの power</b>——泳ぎは {@code mixin/FluidTypeMixin} と
+   * {@code mixin/LavaSwimMixin} が受け持つ。⚠ この power が active かどうかだけを見る。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> LAVA_SWIM =
+      POWER_FACTORIES.register("lava_swim",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
   public static final net.minecraftforge.registries.DeferredRegister<
       net.minecraft.world.effect.MobEffect> EFFECTS =
@@ -119,6 +130,7 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.BooleanValue HOVER_ENABLED;
     public static final ForgeConfigSpec.IntValue HOVER_AMPLIFIER;
     public static final ForgeConfigSpec.BooleanValue HOVER_SHOW_ICON;
+    public static final ForgeConfigSpec.BooleanValue LAVA_SWIM_ENABLED;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_LOGS;
 
     static {
@@ -267,6 +279,15 @@ public final class ShiftingOrigins {
           .comment("Show an icon in the status effect bar while hovering.",
               "Display only - turning this off does not stop the rise.")
           .define("showIcon", true);
+      b.pop();
+
+      // ⚠ 溶岩を水と同じ物理で泳ぐ。⚠ **持っている人にだけ効く**（power で見る）。
+      b.comment("Swimming in lava. The rise, drag and buoyancy all come from vanilla's",
+              "water branch - nothing here invents its own feel.")
+          .push("lavaSwim");
+      LAVA_SWIM_ENABLED = b
+          .comment("Turn the lava swimming power off without removing it from the origin.")
+          .define("enabled", true);
       b.pop();
 
       VERBOSE_LOGS = b

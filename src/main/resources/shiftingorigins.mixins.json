@@ -9,7 +9,10 @@
     "SlotMixin",
     "InventoryMixin",
     "ItemMixin",
+    "FireOverlayMixin",
+    "FluidTypeMixin",
     "HoverMixin",
+    "LavaSwimMixin",
     "LivingEntityMixin",
     "BoundTickingBlockEntityMixin"
   ],
