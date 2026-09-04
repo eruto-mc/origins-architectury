@@ -12,7 +12,9 @@
     "LivingEntityMixin",
     "BoundTickingBlockEntityMixin"
   ],
-  "client": [],
+  "client": [
+    "client.CameraMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
