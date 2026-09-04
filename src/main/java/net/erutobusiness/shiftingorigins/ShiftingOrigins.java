@@ -53,8 +53,21 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("hover",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
+  public static final net.minecraftforge.registries.DeferredRegister<
+      net.minecraft.world.effect.MobEffect> EFFECTS =
+      net.minecraftforge.registries.DeferredRegister.create(
+          net.minecraftforge.registries.ForgeRegistries.MOB_EFFECTS, MOD_ID);
+
+  public static final net.minecraftforge.registries.RegistryObject<
+      net.minecraft.world.effect.MobEffect> HOVER_EFFECT =
+      EFFECTS.register("hover", HoverEffect::new);
+
   public ShiftingOrigins() {
     POWER_FACTORIES.register(FMLJavaModLoadingContext.get().getModEventBus());
+    EFFECTS.register(FMLJavaModLoadingContext.get().getModEventBus());
+    // ⚠ 浮遊が入っていることをバフ欄へ出す係。⚠ **動きとは無関係**（止まっても浮遊は効く）。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(HoverDisplay.class);
     FMLJavaModLoadingContext.get().getModEventBus().addListener(ShiftingOrigins::onConfigLoad);
     net.minecraftforge.fml.ModLoadingContext.get()
         .registerConfig(ModConfig.Type.SERVER, Config.SPEC);
@@ -105,6 +118,7 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.DoubleValue LAVA_BOTTLE_HYDRATION;
     public static final ForgeConfigSpec.BooleanValue HOVER_ENABLED;
     public static final ForgeConfigSpec.IntValue HOVER_AMPLIFIER;
+    public static final ForgeConfigSpec.BooleanValue HOVER_SHOW_ICON;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_LOGS;
 
     static {
@@ -249,6 +263,10 @@ public final class ShiftingOrigins {
           .comment("Levitation amplifier to imitate. 0 is what the datapack used before,",
               "and each step adds 0.05 blocks per tick to the rise.")
           .defineInRange("amplifier", 0, 0, 10);
+      HOVER_SHOW_ICON = b
+          .comment("Show an icon in the status effect bar while hovering.",
+              "Display only - turning this off does not stop the rise.")
+          .define("showIcon", true);
       b.pop();
 
       VERBOSE_LOGS = b
