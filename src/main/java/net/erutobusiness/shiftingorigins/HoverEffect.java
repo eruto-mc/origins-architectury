@@ -41,4 +41,23 @@ public final class HoverEffect extends MobEffect {
   public void applyEffectTick(LivingEntity entity, int amplifier) {
     // ⚠ 何もしない（表示のためだけの効果）。
   }
+
+  /**
+   * ⚠⚠ <b>名前はバニラの浮遊のものを使う。</b>
+   *
+   * <p>⚠ 能力の名前（種族画面）が「浮遊」なので、⚠ <b>バフ欄だけ別の名前だと食い違う</b>。
+   * ⚠ バニラの鍵を指せば<b>全言語ぶんの訳がそのまま出る</b>し、
+   * ⚠ 当部が lang を持たないので<b>ずれようが無い</b>。
+   */
+  @Override
+  public String getDescriptionId() {
+    return "effect.minecraft.levitation";
+  }
+
+  /** ⚠ アイコンもバニラの絵を指す（{@code client.HoverEffectClient}）。⚠ 絵は同梱しない。 */
+  @Override
+  public void initializeClient(java.util.function.Consumer<
+      net.minecraftforge.client.extensions.common.IClientMobEffectExtensions> consumer) {
+    consumer.accept(net.erutobusiness.shiftingorigins.client.HoverEffectClient.INSTANCE);
+  }
 }
