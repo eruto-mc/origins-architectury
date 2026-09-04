@@ -40,6 +40,19 @@ public final class ShiftingOrigins {
           () -> new dev.limonblaze.originsclasses.common.apoli.power.MultiMinePower(
               OreVeinRange::find));
 
+  /**
+   * 浮遊（H の入切で、入れている間ずっと上がる）。
+   *
+   * <p>⚠ <b>印だけの power</b>——上げる処理は {@code mixin/HoverMixin} が
+   * {@code LivingEntity.travel} の中でやる。⚠ この power が active かどうかだけを見る。
+   * ⚠ 状態効果を使わないのは、⚠⚠ <b>農夫の加護が有害扱いの効果を毎tick 消すから</b>
+   * （{@link Hover} の説明）。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> HOVER =
+      POWER_FACTORIES.register("hover",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   public ShiftingOrigins() {
     POWER_FACTORIES.register(FMLJavaModLoadingContext.get().getModEventBus());
     FMLJavaModLoadingContext.get().getModEventBus().addListener(ShiftingOrigins::onConfigLoad);
@@ -90,6 +103,8 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.BooleanValue LAVA_BOTTLE_DRINK;
     public static final ForgeConfigSpec.IntValue LAVA_BOTTLE_THIRST;
     public static final ForgeConfigSpec.DoubleValue LAVA_BOTTLE_HYDRATION;
+    public static final ForgeConfigSpec.BooleanValue HOVER_ENABLED;
+    public static final ForgeConfigSpec.IntValue HOVER_AMPLIFIER;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_LOGS;
 
     static {
@@ -222,6 +237,20 @@ public final class ShiftingOrigins {
       //    ⚠ 遅れの原因ではなかったが、**部員の座標と行動が全部残り**、
       //    ⚠ **本当に見たい行が埋まる**（実際、原因を調べるとき掻き分ける羽目になった）。
       //    ⚠ 消さずに残すのは、どれも切り分けに要った出力だから。
+      // ⚠⚠ **浮遊を状態効果から外した**（2026-09-05）。理由は Hover の説明を読む——
+      //    ⚠ **農夫の加護が HARMFUL の効果を毎tick 消しており、浮遊はその分類だった。**
+      b.comment("Hover (the H toggle). The rise itself uses vanilla's levitation maths;",
+              "only the status effect is gone, because other mods strip harmful effects.")
+          .push("hover");
+      HOVER_ENABLED = b
+          .comment("Turn the hover power off without removing it from the origin.")
+          .define("enabled", true);
+      HOVER_AMPLIFIER = b
+          .comment("Levitation amplifier to imitate. 0 is what the datapack used before,",
+              "and each step adds 0.05 blocks per tick to the rise.")
+          .defineInRange("amplifier", 0, 0, 10);
+      b.pop();
+
       VERBOSE_LOGS = b
           .comment("Log every cook-station touch, item pickup and paced-break batch.",
               "Off by default: on a live server this is thousands of lines an hour and",

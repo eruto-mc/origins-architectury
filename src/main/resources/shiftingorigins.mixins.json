@@ -9,6 +9,7 @@
     "SlotMixin",
     "InventoryMixin",
     "ItemMixin",
+    "HoverMixin",
     "LivingEntityMixin",
     "BoundTickingBlockEntityMixin"
   ],
