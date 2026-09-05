@@ -6,6 +6,7 @@
   "refmap": "origins.refmap.json",
   "mixins": [
     "MultiMinePowerMixin",
+    "CraftingResultMixin",
     "SlotMixin",
     "InventoryMixin",
     "ItemMixin",

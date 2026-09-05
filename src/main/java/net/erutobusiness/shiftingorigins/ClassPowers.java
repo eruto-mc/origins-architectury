@@ -106,6 +106,16 @@ public final class ClassPowers {
     return hasOrigin(player, "origins-classes:cook");
   }
 
+  /**
+   * そのプレイヤーが木こりか。
+   *
+   * <p>⚠ {@link #isCook} と同じで、判定の実体は下の {@code hasOrigin} 1か所だけ。
+   * 使う側は {@link LumberjackPlanks}（板の増量）と {@link SaplingBonemeal}（苗木の骨粉）。
+   */
+  public static boolean isLumberjack(ServerPlayer player) {
+    return hasOrigin(player, "origins-classes:lumberjack");
+  }
+
   /** そのプレイヤーが指定の種族／職業を選んでいるか（層は問わない）。 */
   private static boolean hasOrigin(ServerPlayer player, String originId) {
     return io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer.get(player)

@@ -89,6 +89,9 @@ public final class ShiftingOrigins {
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(OriginChangeCancel.class);
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(OriginLayerGuard.class);
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SkeletonShy.class);
+    // ⚠ 木こりが苗木へ骨粉を使うと1個で木になる。⚠ **板の増量のほうはイベントではなく
+    //   `mixin/CraftingResultMixin`**（産物の枠を組む所を通す必要があるため）。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SaplingBonemeal.class);
     // ⚠ `[種族・職業]` を Tab とサイドバーにだけ出す。名札・チャット・死亡メッセージには出さない。
     //   ⚠ 止め方は config の nameLabels.enabled（datapack 側が数秒で元へ戻る）。理由は NameLabels。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(NameLabels.class);
@@ -131,6 +134,9 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.IntValue HOVER_AMPLIFIER;
     public static final ForgeConfigSpec.BooleanValue HOVER_SHOW_ICON;
     public static final ForgeConfigSpec.BooleanValue LAVA_SWIM_ENABLED;
+    public static final ForgeConfigSpec.IntValue BONUS_PLANKS;
+    public static final ForgeConfigSpec.BooleanValue SAPLING_BONEMEAL;
+    public static final ForgeConfigSpec.IntValue SAPLING_MAX_STEPS;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_LOGS;
 
     static {
@@ -288,6 +294,33 @@ public final class ShiftingOrigins {
       LAVA_SWIM_ENABLED = b
           .comment("Turn the lava swimming power off without removing it from the origin.")
           .define("enabled", true);
+      b.pop();
+
+      // ⚠ 板の増量は、上流の power が作業台で1枚も増やせていなかったため当部で作り直した。
+      //   ⚠ 理由の全文は LumberjackPlanks の説明（Visual Workbench が容器を差し替えている）。
+      b.comment("The lumberjack class. Upstream's more_planks_from_logs is an",
+              "apoli:modify_crafting power, and its ModifiedCraftingRecipe bails out unless the",
+              "grid is a vanilla TransientCraftingContainer. Visual Workbench swaps the crafting",
+              "table's grid for its own ForwardingCraftingContainer, so the bonus never applied",
+              "at a table -- which is what club members reported. This mod bumps the assembled",
+              "result instead, so no extra recipe competes with the vanilla one.")
+          .push("lumberjack");
+      BONUS_PLANKS = b
+          .comment("Extra planks when a lumberjack crafts planks from a single log.",
+              "Vanilla gives 4; upstream's description promises two more, so 2 is the default.",
+              "0 turns the bonus off without removing the power from the class.")
+          .defineInRange("bonusPlanks", 2, 0, 60);
+      SAPLING_BONEMEAL = b
+          .comment("Bone meal used by a lumberjack on a sapling grows the tree in one go.",
+              "Vanilla rolls 0.45 per bone meal and needs two successes, so an average sapling",
+              "costs about 4.4 bone meal. This skips the roll for this class only.",
+              "Players who also carry a modify_bone_meal power are left to Origins Classes.")
+          .define("saplingBonemeal", true);
+      SAPLING_MAX_STEPS = b
+          .comment("Upper bound on how many growth steps one bone meal may take. Vanilla",
+              "saplings need 2. The bound only exists so a modded sapling with an unusual",
+              "performBonemeal cannot spin here forever.")
+          .defineInRange("saplingMaxSteps", 8, 1, 64);
       b.pop();
 
       VERBOSE_LOGS = b
