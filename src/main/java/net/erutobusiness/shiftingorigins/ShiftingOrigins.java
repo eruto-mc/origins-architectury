@@ -64,6 +64,35 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("lava_swim",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /**
+   * 戦士の3つと釣り人の1つ（2026-09-06）。
+   *
+   * <p>⚠ <b>どれも印だけの power</b>——中身は Java が持つ（{@link WarriorCombat} と
+   * {@code mixin/PlayerShieldMixin}・{@code mixin/FishingHookMixin}）。
+   * ⚠ apoli には<b>体力を見る条件も、盾で受けた状態も、釣りの待ち時間も無い</b>ので、
+   * data 側では書けない。⚠ それでも power として登録するのは、
+   * <b>種族・職業の説明画面に名前と説明を出すため</b>（浮遊・溶岩泳ぎと同じ型）。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> SHIELD_MASTER =
+      POWER_FACTORIES.register("shield_master",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> RIPOSTE =
+      POWER_FACTORIES.register("riposte",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> LAST_STAND =
+      POWER_FACTORIES.register("last_stand",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> QUICK_BITE =
+      POWER_FACTORIES.register("quick_bite",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
   public static final net.minecraftforge.registries.DeferredRegister<
       net.minecraft.world.effect.MobEffect> EFFECTS =
@@ -92,6 +121,10 @@ public final class ShiftingOrigins {
     // ⚠ 木こりが苗木へ骨粉を使うと1個で木になる。⚠ **板の増量のほうはイベントではなく
     //   `mixin/CraftingResultMixin`**（産物の枠を組む所を通す必要があるため）。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SaplingBonemeal.class);
+    // ⚠ 聖職者のエンチャント。⚠ **鍛冶屋の修理は `mixin/CraftingResultMixin`**（産物の枠を通す）。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(ClericEnchanting.class);
+    // ⚠ 戦士の受け流しと背水。⚠ **盾を割られない側は mixin**（`Player.disableShield` を打ち切る）。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(WarriorCombat.class);
     // ⚠ `[種族・職業]` を Tab とサイドバーにだけ出す。名札・チャット・死亡メッセージには出さない。
     //   ⚠ 止め方は config の nameLabels.enabled（datapack 側が数秒で元へ戻る）。理由は NameLabels。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(NameLabels.class);
@@ -137,6 +170,14 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.IntValue BONUS_PLANKS;
     public static final ForgeConfigSpec.BooleanValue SAPLING_BONEMEAL;
     public static final ForgeConfigSpec.IntValue SAPLING_MAX_STEPS;
+    public static final ForgeConfigSpec.BooleanValue CLERIC_ENCHANTING;
+    public static final ForgeConfigSpec.BooleanValue BLACKSMITH_REPAIR;
+    public static final ForgeConfigSpec.BooleanValue SHIELD_MASTER;
+    public static final ForgeConfigSpec.IntValue RIPOSTE_TICKS;
+    public static final ForgeConfigSpec.DoubleValue RIPOSTE_BONUS;
+    public static final ForgeConfigSpec.DoubleValue LAST_STAND_HALF;
+    public static final ForgeConfigSpec.DoubleValue LAST_STAND_QUARTER;
+    public static final ForgeConfigSpec.DoubleValue QUICK_BITE_FACTOR;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_LOGS;
 
     static {
@@ -321,6 +362,72 @@ public final class ShiftingOrigins {
               "saplings need 2. The bound only exists so a modded sapling with an unusual",
               "performBonemeal cannot spin here forever.")
           .defineInRange("saplingMaxSteps", 8, 1, 64);
+      b.pop();
+
+      // ⚠ どちらも「上流の実装が前提にしている vanilla の器を、別の MOD が差し替えた」型。
+      //   ⚠ 木こりと同じ形で、2026-09-05 の総当たり（selection/audits/class-powers-alive）で出た。
+      b.comment("The cleric's better_enchanting. Upstream relays the enchanter through an NBT",
+              "tag written in EnchantmentMenu.slotsChanged, because EnchantmentLevelSetEvent",
+              "does not carry a player. Easy Magic's ModEnchantmentMenu declares slotsChanged",
+              "itself and never calls the vanilla one, so the tag is never written and the",
+              "bonus never applies. This looks the enchanter up from the table position",
+              "instead, which does not depend on which mod owns the menu.")
+          .push("cleric");
+      CLERIC_ENCHANTING = b
+          .comment("Whether the cleric's enchanting bonus is restored.",
+              "Turns itself off for a stack that already carries upstream's tag, so removing",
+              "Easy Magic (or adding Apotheosis) needs no config change.")
+          .define("enchantingBonus", true);
+      b.pop();
+      b.comment("The blacksmith's efficient_repairs, crafting-grid half. Upstream's",
+              "RepairItemRecipeMixin returns the vanilla 5% unless the grid is a",
+              "TransientCraftingContainer, which Visual Workbench replaces at a crafting",
+              "table -- the same break as the lumberjack's planks. The 2x2 inventory grid",
+              "kept working, so repairs came out better in the inventory than on a table.")
+          .push("blacksmith");
+      BLACKSMITH_REPAIR = b
+          .comment("Whether the combine-repair durability bonus is restored at a table.",
+              "Skipped when the grid is a vanilla container, because upstream applies it there.")
+          .define("combineRepair", true);
+      b.pop();
+
+      // ⚠ 2026-09-06 に足した3つ。⚠ **手数（攻撃速度）はここに無い**——
+      //   あちらは素の `apoli:attribute` なので、数字は power の JSON 側に在る。
+      b.comment("Three powers added to the warrior in 2026-09-06. Apoli has no entity",
+              "condition for health and none for 'just blocked with a shield', so these are",
+              "marker powers whose behaviour lives in Java. The vanilla axe hit adds 0.75 on",
+              "top of a 0.25 base chance to knock a shield aside, i.e. it practically always",
+              "lands; shieldMaster stops that for this class only.")
+          .push("warrior");
+      SHIELD_MASTER = b
+          .comment("Whether a warrior's shield can be knocked aside by an axe.",
+              "The shield still takes durability damage -- only the stagger is stopped.")
+          .define("shieldMaster", true);
+      RIPOSTE_TICKS = b
+          .comment("How long the riposte stays armed after blocking, in ticks. 20 = 1 second.")
+          .defineInRange("riposteTicks", 60, 1, 600);
+      RIPOSTE_BONUS = b
+          .comment("Extra damage on the first hit after blocking. 0.5 = +50%.",
+              "Spent on one hit, so holding the bonus while swinging repeatedly is not possible.")
+          .defineInRange("riposteBonus", 0.5D, 0.0D, 10.0D);
+      LAST_STAND_HALF = b
+          .comment("Extra damage below half health. Measured as a share of max health, so",
+              "races with fewer hearts reach it at the same point.")
+          .defineInRange("lastStandHalf", 0.15D, 0.0D, 10.0D);
+      LAST_STAND_QUARTER = b
+          .comment("Extra damage below a quarter health. Replaces the half-health value.")
+          .defineInRange("lastStandQuarter", 0.3D, 0.0D, 10.0D);
+      b.pop();
+
+      b.comment("The fisher. Vanilla rolls 100-600 ticks of waiting before a fish bites and",
+              "then subtracts 100 ticks per level of Lure. Doubling the catch was pointless",
+              "while that wait stayed the same, so both of the class's powers were stuck",
+              "behind it. This scales the rolled wait instead of subtracting from it, so a",
+              "short roll cannot collapse to zero.")
+          .push("fisher");
+      QUICK_BITE_FACTOR = b
+          .comment("Multiplier on the rolled wait. 0.6 = 40% shorter. Lure still applies on top.")
+          .defineInRange("quickBiteFactor", 0.6D, 0.05D, 1.0D);
       b.pop();
 
       VERBOSE_LOGS = b

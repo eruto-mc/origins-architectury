@@ -7,6 +7,8 @@
   "mixins": [
     "MultiMinePowerMixin",
     "CraftingResultMixin",
+    "PlayerShieldMixin",
+    "FishingHookMixin",
     "SlotMixin",
     "InventoryMixin",
     "ItemMixin",

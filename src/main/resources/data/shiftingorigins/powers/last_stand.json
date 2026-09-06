@@ -1,0 +1,5 @@
+{
+  "type": "shiftingorigins:last_stand",
+  "name": "背水",
+  "description": "体力が半分を切ると与えるダメージが上がり、4分の1を切るとさらに上がる。"
+}

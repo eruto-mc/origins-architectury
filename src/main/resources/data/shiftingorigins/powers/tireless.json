@@ -1,17 +1,28 @@
 {
-  "type": "apoli:action_over_time",
+  "type": "apoli:multiple",
   "name": "疲れ知らず",
-  "description": "パルクールの動きで満腹度が減らない。",
-  "interval": 20,
-  "entity_action": {
-    "type": "apoli:apply_effect",
-    "effect": {
-      "effect": "parcool:inexhaustible",
-      "duration": 60,
-      "amplifier": 0,
-      "is_ambient": true,
-      "show_particles": false,
-      "show_icon": false
+  "description": "パルクールでは満腹度がまったく減らない。走っても腹の減りが半分で済む。",
+  "no_parcool_exhaustion": {
+    "type": "apoli:action_over_time",
+    "interval": 20,
+    "entity_action": {
+      "type": "apoli:apply_effect",
+      "effect": {
+        "effect": "parcool:inexhaustible",
+        "duration": 60,
+        "amplifier": 0,
+        "is_ambient": true,
+        "show_particles": false,
+        "show_icon": false
+      }
+    }
+  },
+  "half_exhaustion": {
+    "type": "apoli:modify_exhaustion",
+    "modifier": {
+      "name": "Explorer half exhaustion",
+      "operation": "multiply_base",
+      "value": -0.5
     }
   }
 }

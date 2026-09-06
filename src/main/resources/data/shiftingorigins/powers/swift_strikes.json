@@ -1,0 +1,11 @@
+{
+  "type": "apoli:attribute",
+  "name": "手数",
+  "description": "武器を振り直すまでが速い。同じ時間でより多く打ち込める。",
+  "modifier": {
+    "name": "Warrior swift strikes",
+    "attribute": "minecraft:generic.attack_speed",
+    "value": 0.2,
+    "operation": "multiply_base"
+  }
+}

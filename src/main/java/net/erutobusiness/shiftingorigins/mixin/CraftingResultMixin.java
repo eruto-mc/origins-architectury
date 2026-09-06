@@ -1,6 +1,7 @@
 package net.erutobusiness.shiftingorigins.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.erutobusiness.shiftingorigins.BlacksmithRepair;
 import net.erutobusiness.shiftingorigins.LumberjackPlanks;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -46,10 +47,13 @@ public abstract class CraftingResultMixin {
           target = "Lnet/minecraft/world/item/crafting/CraftingRecipe;"
               + "assemble(Lnet/minecraft/world/Container;Lnet/minecraft/core/RegistryAccess;)"
               + "Lnet/minecraft/world/item/ItemStack;"))
-  private static ItemStack shiftingorigins$morePlanks(final ItemStack result,
+  private static ItemStack shiftingorigins$craftResult(final ItemStack result,
       final AbstractContainerMenu menu, final Level level, final Player player,
       final CraftingContainer grid, final ResultContainer out) {
 
-    return LumberjackPlanks.bonus(result, player, grid);
+    // ⚠ 職業ごとに1つずつ通す。⚠ **どれも「その職業でなければ元の品をそのまま返す」**ので、
+    //   順に重ねてよい（いまの2つは対象の品が重ならない——板と、修理した道具）。
+    final ItemStack planks = LumberjackPlanks.bonus(result, player, grid);
+    return BlacksmithRepair.bonus(planks, player, grid);
   }
 }

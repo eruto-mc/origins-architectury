@@ -58,7 +58,14 @@ public final class ClassPowers {
       new Rule("origins-classes:explorer",
           List.of("shiftingorigins:keen_eye", "shiftingorigins:tireless")),
       new Rule("origins-classes:cleric",
-          List.of("shiftingorigins:potion_sharing")));
+          List.of("shiftingorigins:potion_sharing")),
+      // ⚠ 2026-09-06 に足した分（職業を強くする側の見直し）。
+      //   ⚠ **上流の職業定義には触らない**——ここで配るので、上流が中身を変えても壊れない。
+      new Rule("origins-classes:warrior",
+          List.of("shiftingorigins:shield_master", "shiftingorigins:swift_strikes",
+              "shiftingorigins:riposte", "shiftingorigins:last_stand")),
+      new Rule("world3:fisher",
+          List.of("shiftingorigins:quick_bite")));
 
   private ClassPowers() {
   }
