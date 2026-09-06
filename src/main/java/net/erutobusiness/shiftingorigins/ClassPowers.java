@@ -131,6 +131,16 @@ public final class ClassPowers {
     return hasOrigin(player, "origins-classes:lumberjack");
   }
 
+  /**
+   * そのプレイヤーが鍛冶屋か。
+   *
+   * <p>⚠ 使う側は {@link BlacksmithTools}（金床が欠けない・鍛冶型が減らない）と
+   * {@link FurnaceSpeed}（溶鉱炉とかまどが2倍）。
+   */
+  public static boolean isBlacksmith(ServerPlayer player) {
+    return hasOrigin(player, "origins-classes:blacksmith");
+  }
+
   /** そのプレイヤーが指定の種族／職業を選んでいるか（層は問わない）。 */
   private static boolean hasOrigin(ServerPlayer player, String originId) {
     return io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer.get(player)

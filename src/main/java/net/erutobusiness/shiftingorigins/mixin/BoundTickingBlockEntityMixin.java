@@ -1,6 +1,7 @@
 package net.erutobusiness.shiftingorigins.mixin;
 
 import net.erutobusiness.shiftingorigins.CookSpeed;
+import net.erutobusiness.shiftingorigins.FurnaceSpeed;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import org.spongepowered.asm.mixin.Final;
@@ -56,6 +57,26 @@ public abstract class BoundTickingBlockEntityMixin<T extends BlockEntity> {
     //   勢い … 1ゲームtickに 1 減る（＝素と同じ。窓が狭まらない）
     // ⚠ 上限に張り付いているときは戻せないので、そのぶんは素と同じ速さになる（害は無い）。
     CookSpeed.keepMomentum(this.blockEntity);
+    this.ticker.tick(this.blockEntity.getLevel(), this.blockEntity.getBlockPos(),
+        this.blockEntity.getBlockState(), this.blockEntity);
+  }
+
+  /**
+   * 鍛冶屋の近くのかまどと溶鉱炉を2倍で回す（2026-09-06・あなたの決定）。
+   *
+   * <p>⚠ <b>料理人と同じ seam を使う</b>——新しい mixin を増やさない。
+   * ⚠ <b>台の判定は {@link FurnaceSpeed} 1か所</b>で、⚠ <b>燻製器は外してある</b>
+   * （あちらは料理人のもの）。
+   *
+   * <p>⚠ 炉は「勢い」を持たないので、{@code keepMomentum} のような打ち消しは要らない
+   * （進み具合は `litTime` と `cookingProgress` で、もう1回回せば素直に倍になる）。
+   */
+  @Inject(method = "tick", at = @At("TAIL"))
+  private void shiftingorigins$furnaceSpeed(CallbackInfo ci) {
+    if (!FurnaceSpeed.shouldSpeedUp(this.blockEntity)
+        || this.blockEntity.isRemoved() || !this.blockEntity.hasLevel()) {
+      return;
+    }
     this.ticker.tick(this.blockEntity.getLevel(), this.blockEntity.getBlockPos(),
         this.blockEntity.getBlockState(), this.blockEntity);
   }

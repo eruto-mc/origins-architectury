@@ -117,6 +117,17 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("kitchen_hand",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  // ⚠ 鍛冶屋の2つ（2026-09-06）。⚠ **働いているのは Java の側**で、ここは画面へ並べる印。
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> BLACKSMITH_TOOLS_POWER =
+      POWER_FACTORIES.register("blacksmith_tools",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> BLACKSMITH_FURNACE_POWER =
+      POWER_FACTORIES.register("blacksmith_furnace",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   public static final net.minecraftforge.registries.RegistryObject<
       io.github.edwinmindcraft.apoli.common.power.DummyPower> SAPLING_BONEMEAL =
       POWER_FACTORIES.register("sapling_bonemeal",
@@ -161,6 +172,9 @@ public final class ShiftingOrigins {
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SiphonGuard.class);
     // ⚠ 種族の蘇りを、不死のトーテムより先に働かせる。⚠ **トーテムは減らない**（理由は当のクラス）。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(UndyingBeforeTotem.class);
+    // ⚠ 鍛冶屋の道具と型は減らない（金床が欠けない側）。
+    //   ⚠ **鍛冶型は mixin/SmithingMenuMixin**、⚠ **炉の2倍は mixin/BoundTickingBlockEntityMixin**。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(BlacksmithTools.class);
     // ⚠ 溶岩入りの瓶（ブレイズボーンの水）は **Mixin 側**で拾う（`mixin/ItemMixin`）。
     //   ⚠ イベントで拾うと**啜るモーションが出ない**ので、ここには登録しない。
     // ⚠ 能力名の横に自動で付く印（A / T / R）を、画面へ出る前に外す。
@@ -204,6 +218,8 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.IntValue SAPLING_MAX_STEPS;
     public static final ForgeConfigSpec.BooleanValue CLERIC_ENCHANTING;
     public static final ForgeConfigSpec.BooleanValue BLACKSMITH_REPAIR;
+    public static final ForgeConfigSpec.BooleanValue BLACKSMITH_TOOLS;
+    public static final ForgeConfigSpec.BooleanValue BLACKSMITH_FURNACE;
     public static final ForgeConfigSpec.BooleanValue SHIELD_MASTER;
     public static final ForgeConfigSpec.IntValue RIPOSTE_TICKS;
     public static final ForgeConfigSpec.DoubleValue RIPOSTE_BONUS;
@@ -421,6 +437,17 @@ public final class ShiftingOrigins {
           .comment("Whether the combine-repair durability bonus is restored at a table.",
               "Skipped when the grid is a vanilla container, because upstream applies it there.")
           .define("combineRepair", true);
+      BLACKSMITH_TOOLS = b
+          .comment("A blacksmith's own gear is not spent: the smithing template survives a",
+              "smithing-table use, and the anvil never chips. The anvil's level cost is left",
+              "alone on purpose. That cost scales with enchantment count and rarity, so it is",
+              "the cleric's axis, not the smith's.")
+          .define("toolsNotSpent", true);
+      BLACKSMITH_FURNACE = b
+          .comment("Furnaces and blast furnaces near a blacksmith run at double speed.",
+              "Smokers are excluded: those belong to the cook, whose own power leaves",
+              "furnaces alone. The two classes divide the fires between them.")
+          .define("furnaceSpeed", true);
       b.pop();
 
       // ⚠ 2026-09-06 に足した3つ。⚠ **手数（攻撃速度）はここに無い**——

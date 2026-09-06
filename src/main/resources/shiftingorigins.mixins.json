@@ -17,7 +17,8 @@
     "HoverMixin",
     "LavaSwimMixin",
     "LivingEntityMixin",
-    "BoundTickingBlockEntityMixin"
+    "BoundTickingBlockEntityMixin",
+    "SmithingMenuMixin"
   ],
   "client": [
     "client.CameraMixin"
