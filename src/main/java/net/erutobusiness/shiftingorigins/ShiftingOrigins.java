@@ -159,6 +159,8 @@ public final class ShiftingOrigins {
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(NameLabels.class);
     // ⚠ 精気吸収がアンデッドから吸えていた（上流の説明は「効かない」と書いているのに実装が無い）
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SiphonGuard.class);
+    // ⚠ 種族の蘇りを、不死のトーテムより先に働かせる。⚠ **トーテムは減らない**（理由は当のクラス）。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(UndyingBeforeTotem.class);
     // ⚠ 溶岩入りの瓶（ブレイズボーンの水）は **Mixin 側**で拾う（`mixin/ItemMixin`）。
     //   ⚠ イベントで拾うと**啜るモーションが出ない**ので、ここには登録しない。
     // ⚠ 能力名の横に自動で付く印（A / T / R）を、画面へ出る前に外す。
@@ -189,6 +191,7 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.BooleanValue LABELS_TAB;
     public static final ForgeConfigSpec.BooleanValue LABELS_SIDEBAR;
     public static final ForgeConfigSpec.BooleanValue SIPHON_SKIP_UNDEAD;
+    public static final ForgeConfigSpec.BooleanValue UNDYING_BEFORE_TOTEM;
     public static final ForgeConfigSpec.BooleanValue LAVA_BOTTLE_DRINK;
     public static final ForgeConfigSpec.IntValue LAVA_BOTTLE_THIRST;
     public static final ForgeConfigSpec.DoubleValue LAVA_BOTTLE_HYDRATION;
@@ -457,6 +460,17 @@ public final class ShiftingOrigins {
       QUICK_BITE_FACTOR = b
           .comment("Multiplier on the rolled wait. 0.6 = 40% shorter. Lure still applies on top.")
           .defineInRange("quickBiteFactor", 0.6D, 0.05D, 1.0D);
+      b.pop();
+
+      b.comment("Which revival wins when a player holding a Totem of Undying takes a lethal",
+              "hit. Vanilla checks the totem inside hurt and only calls die when no totem",
+              "saved you, so an Origins prevent_death power never gets a turn. The totem is",
+              "gone for good after one use, while the class revival can be refilled, so the",
+              "refillable one should be spent first. Turning this off restores vanilla order.")
+          .push("undying");
+      UNDYING_BEFORE_TOTEM = b
+          .comment("Let an Origins revival fire before the totem. The totem is NOT consumed.")
+          .define("beforeTotem", true);
       b.pop();
 
       VERBOSE_LOGS = b
