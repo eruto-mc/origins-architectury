@@ -5,15 +5,21 @@ import dev.limonblaze.originsclasses.util.CommonUtils;
 import io.github.edwinmindcraft.apoli.api.component.IPowerContainer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.enchanting.EnchantmentLevelSetEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -47,9 +53,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * {@code EnchantmentMenu.clickMenuButton} が読むので、書き換えた値がそのまま使われる
  * （Easy Magic はこのメソッドを上流へ委ねている・定数プールで確認）。
  *
- * <p>⚠ <b>候補の予告だけは元の段階のまま出ることがある。</b>
- * 予告（{@code enchantClue}）は台が {@code costs} を決めた直後に作られ、
- * こちらはその後で書き換えるため。⚠ <b>必要レベルの数字と、実際に付く物は正しい。</b>
+ * <p>⚠⚠ <b>予告も作り直す（2026-09-06 追加）。</b> それまでは<b>必要レベルだけ上がって、
+ * 予告は上げる前の数字のまま</b>出ていた（台は costs を決めた直後に予告を作り、
+ * こちらはその後で書き換えるため）。⚠ <b>部員から「40 の内容がよくなってるように見えない」
+ * と報告が来て分かった。</b> 作り直しは {@link #retellClues} を見ること。
  */
 public final class ClericEnchanting {
 
@@ -134,7 +141,56 @@ public final class ClericEnchanting {
       }
     }
     if (touched) {
+      retellClues(menu, costs);
       LAST_APPLIED.put(player.getUUID(), costs.clone());
+    }
+  }
+
+  /**
+   * 画面に出る「予告」を、上げた後の数字で作り直す。
+   *
+   * <p>⚠⚠ <b>これが無いと、部員には強くなったことが見えない。</b> 台は
+   * <b>costs を決める → 予告を作る → 送る</b> の順で動き（Easy Magic の
+   * {@code slotsChanged} を逆アセンブルして確認: {@code updateLevels} → {@code createClues}
+   * → {@code sendEnchantingData}）、⚠ <b>こちらが costs を上げるのはその後</b>。
+   * ⚠ だから<b>必要レベルだけ 40 になり、予告は 30 のときのまま</b>出ていた。
+   * ⚠ 部員の報告「40 の内容がよくなってるようには見えない」はこれ。
+   *
+   * <p>⚠ <b>作り方はバニラの {@code getEnchantmentList} を1命令ずつ写した</b>
+   * （79 バイトの中身を逆アセンブルした）——⚠ <b>種を {@code 種 + 段} で置き直し、
+   * {@code selectEnchantment} を呼び、本なら1つ抜き、残りから1つ選ぶ</b>。
+   * ⚠⚠ <b>押したときに実際に走るのはこのバニラの経路</b>（Easy Magic は再抽選のときだけ
+   * 自分で処理し、エンチャント本体は上流へ渡している）。⚠ <b>予告と結果がずれない。</b>
+   *
+   * <p>⚠ 乱数は<b>自前のものを同じ種で回す</b>。台の {@code random} は private なので触れず、
+   * ⚠ 種を置き直す作りのおかげで<b>前の状態に依らず同じ並びになる</b>。
+   *
+   * <p>⚠ 書き込む先はバニラの欄（{@code enchantClue} / {@code levelClue}）。
+   * ⚠ Easy Magic も<b>同じ欄へ書いている</b>ことを確認済み（`f_39447_` / `f_39448_`）。
+   */
+  private static void retellClues(final EnchantmentMenu menu, final int[] costs) {
+
+    final ItemStack stack = menu.getSlot(0).getItem();
+    if (stack.isEmpty()) {
+      return;
+    }
+    for (int i = 0; i < costs.length; i++) {
+      if (costs[i] <= 0) {
+        continue;
+      }
+      final RandomSource rng = RandomSource.create();
+      rng.setSeed(menu.getEnchantmentSeed() + i);
+      final List<EnchantmentInstance> list =
+          EnchantmentHelper.selectEnchantment(rng, stack, costs[i], false);
+      if (stack.is(Items.BOOK) && list.size() > 1) {
+        list.remove(rng.nextInt(list.size()));
+      }
+      if (list.isEmpty()) {
+        continue;
+      }
+      final EnchantmentInstance picked = list.get(rng.nextInt(list.size()));
+      menu.enchantClue[i] = BuiltInRegistries.ENCHANTMENT.getId(picked.enchantment);
+      menu.levelClue[i] = picked.level;
     }
   }
 
