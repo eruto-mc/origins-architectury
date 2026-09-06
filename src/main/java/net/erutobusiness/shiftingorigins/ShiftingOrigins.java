@@ -93,6 +93,35 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("quick_bite",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /**
+   * ⚠⚠ <b>画面に出ていなかった2つ</b>（2026-09-06・あなたの指示
+   * 「画面の能力一覧に意図せず出てきてないものはすべて出すようにして」）。
+   *
+   * <p>どちらも Java が<b>職業を直に見て</b>働いていた（{@code ClassPowers.isCook} /
+   * {@code isLumberjack}）。⚠ 画面は power の一覧しか描かないので、
+   * ⚠⚠ <b>存在ごと見えていなかった。</b>
+   *
+   * <ul>
+   *   <li><b>手際</b>（料理人）… 近くの調理台が2倍。⚠ <b>料理人の一番大きな能力</b>なのに、
+   *       職業を選ぶ画面に一行も出ていなかった</li>
+   *   <li><b>芽吹かせる</b>（木こり）… 苗木の骨粉が1個で木になる。
+   *       ⚠ <b>同じ日に私が足したときに付け忘れた</b></li>
+   * </ul>
+   *
+   * <p>⚠ <b>挙動は1ミリも変えない。</b> 判定を power へ移すのではなく、
+   * <b>印として並べて配るだけ</b>にしてある（既存の Java はそのまま職業を見る）。
+   * ⚠ そうしないと、片方だけ配られた状態で挙動が変わりうる。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> KITCHEN_HAND =
+      POWER_FACTORIES.register("kitchen_hand",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> SAPLING_BONEMEAL =
+      POWER_FACTORIES.register("sapling_bonemeal",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
   public static final net.minecraftforge.registries.DeferredRegister<
       net.minecraft.world.effect.MobEffect> EFFECTS =

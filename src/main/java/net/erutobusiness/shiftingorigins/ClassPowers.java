@@ -65,7 +65,15 @@ public final class ClassPowers {
           List.of("shiftingorigins:shield_master", "shiftingorigins:swift_strikes",
               "shiftingorigins:riposte", "shiftingorigins:last_stand")),
       new Rule("world3:fisher",
-          List.of("shiftingorigins:quick_bite")));
+          List.of("shiftingorigins:quick_bite")),
+      // ⚠⚠ **画面に出すためだけの印**（2026-09-06）。⚠ **働いているのは Java の側**で、
+      //   そちらは今までどおり職業を直に見る（`CookSpeed` / `SaplingBonemeal`）。
+      //   ⚠ ここで配るのは「能力の一覧に並べる」ため。⚠ **判定をこちらへ移さない**
+      //   （移すと、配られる前の1秒間だけ挙動が変わる）。
+      new Rule("origins-classes:cook",
+          List.of("shiftingorigins:kitchen_hand")),
+      new Rule("origins-classes:lumberjack",
+          List.of("shiftingorigins:sapling_bonemeal")));
 
   private ClassPowers() {
   }
