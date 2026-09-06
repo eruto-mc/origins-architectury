@@ -1,5 +1,6 @@
 {
   "type": "shiftingorigins:shield_master",
-  "name": "盾を割られない",
+  "hidden": true,
+  "name": "割れない盾",
   "description": "斧で殴られても盾を弾かれない。構えたまま戦い続けられる。"
 }
