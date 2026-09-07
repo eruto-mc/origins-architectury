@@ -141,6 +141,17 @@ public final class ClassPowers {
     return hasOrigin(player, "origins-classes:blacksmith");
   }
 
+  /**
+   * そのプレイヤーが商人か。
+   *
+   * <p>⚠ 使う側は {@link MerchantStock}（取引の在庫が確率で減らない）。
+   * ⚠ 上流の「尽きない品揃え」は無害な定義で上書きしてあるので、
+   * ⚠⚠ <b>いま商人の在庫を決めているのはここを通る道だけ</b>。
+   */
+  public static boolean isMerchant(ServerPlayer player) {
+    return hasOrigin(player, "origins-classes:merchant");
+  }
+
   /** そのプレイヤーが指定の種族／職業を選んでいるか（層は問わない）。 */
   private static boolean hasOrigin(ServerPlayer player, String originId) {
     return io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer.get(player)

@@ -175,6 +175,9 @@ public final class ShiftingOrigins {
     // ⚠ 鍛冶屋の道具と型は減らない（金床が欠けない側）。
     //   ⚠ **鍛冶型は mixin/SmithingMenuMixin**、⚠ **炉の2倍は mixin/BoundTickingBlockEntityMixin**。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(BlacksmithTools.class);
+    // ⚠ 商人の在庫（`TradeWithVillagerEvent`）。⚠ mixin ではなく Forge のイベント——
+    //   ⚠ 上流 origins-classes が mixin なのは、⚠⚠ **47.1 にこのイベントが無かったから**。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(MerchantStock.class);
     // ⚠ 溶岩入りの瓶（ブレイズボーンの水）は **Mixin 側**で拾う（`mixin/ItemMixin`）。
     //   ⚠ イベントで拾うと**啜るモーションが出ない**ので、ここには登録しない。
     // ⚠ 能力名の横に自動で付く印（A / T / R）を、画面へ出る前に外す。
@@ -226,6 +229,7 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.DoubleValue LAST_STAND_HALF;
     public static final ForgeConfigSpec.DoubleValue LAST_STAND_QUARTER;
     public static final ForgeConfigSpec.DoubleValue QUICK_BITE_FACTOR;
+    public static final ForgeConfigSpec.DoubleValue MERCHANT_STOCK_KEPT;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_LOGS;
 
     static {
@@ -487,6 +491,21 @@ public final class ShiftingOrigins {
       QUICK_BITE_FACTOR = b
           .comment("Multiplier on the rolled wait. 0.6 = 40% shorter. Lure still applies on top.")
           .defineInRange("quickBiteFactor", 0.6D, 0.05D, 1.0D);
+      b.pop();
+
+      b.comment("The merchant's trade_availability. Upstream makes a trade never run out at",
+              "all: its mixin gives the use straight back at the end of notifyTrade. A stock",
+              "that never moves also makes the villager's own restock meaningless, so the",
+              "class removed a whole vanilla rhythm rather than bending it. This rolls for",
+              "each trade instead, and tells the open screen when the use was given back so",
+              "the client's copy of the offers cannot drift from the server's.")
+          .push("merchant");
+      MERCHANT_STOCK_KEPT = b
+          .comment("Chance that a trade does not spend a use for a merchant. 0.5 = half the",
+              "trades are free, so a 12-use trade lasts about 24 trades. 1.0 restores",
+              "upstream's never-runs-out behaviour; 0 turns the power off without removing it",
+              "from the class.")
+          .defineInRange("stockKeptChance", 0.5D, 0.0D, 1.0D);
       b.pop();
 
       b.comment("Which revival wins when a player holding a Totem of Undying takes a lethal",
