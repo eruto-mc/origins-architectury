@@ -44,10 +44,15 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * 開いている画面が {@code EnchantmentMenu}（差し替え版もこれを継承する）なら、
  * その {@code costs} を毎tick見て、<b>まだ手を入れていない値なら</b>書き換える。
  *
- * <p>⚠⚠ <b>なぜ mixin にしないか</b>: 相手の MOD のクラスを {@code @Mixin(targets=…)} で
- * 狙うと、⚠ <b>コンパイル時にその MOD が依存に必要</b>になる（2026-09-06 にビルドが落ちた）。
- * ⚠ Easy Magic を依存へ足すと、<b>その MOD を抜いた日にビルドが落ちる</b>。
- * ⚠ こちらは vanilla の型しか触らないので、台を差し替える MOD が変わっても壊れない。
+ * <p>⚠⚠ <b>必要レベルの側は mixin にしない。</b> 相手の MOD のクラスを狙うと、
+ * ⚠ 使う型がある以上<b>コンパイル時にその MOD が依存に要る</b>（2026-09-06 にビルドが落ちた）。
+ * ⚠ ここは vanilla の型しか触らないので、台を差し替える MOD が変わっても壊れない。
+ *
+ * <p>⚠ <b>「予告がすべて読める」だけは名指ししている</b>（2026-09-09・あなたの了解）。
+ * ⚠⚠ <b>予告の一覧を描いているのが Easy Magic の画面</b>で、
+ * バニラの欄に何を書いても1行も出ないため。⚠ 落ちないように、
+ * {@code ShiftingOriginsMixinPlugin} が<b>Easy Magic が居るときだけ</b>当てる。
+ * ⚠ 当てる先は {@code mixin/EasyMagicHintMixin} と {@code mixin/EasyMagicSendAccessor}。
  *
  * <p>⚠ <b>実際に付くエンチャントも正しく上がる。</b> 押した時点の {@code costs} を
  * {@code EnchantmentMenu.clickMenuButton} が読むので、書き換えた値がそのまま使われる
@@ -155,6 +160,7 @@ public final class LibrarianEnchanting {
     }
     if (touched) {
       retellClues(menu, costs);
+      resendHints(menu);
       LAST_APPLIED.put(player.getUUID(), costs.clone());
     }
   }
@@ -240,6 +246,42 @@ public final class LibrarianEnchanting {
     }
     final ServerPlayer player = OPENERS.get(menu);
     return player != null && ClassPowers.isLibrarian(player);
+  }
+
+  /**
+   * その人の予告を、抽選の候補ぜんぶで出すか（＝開いているのが司書か）。
+   *
+   * <p>⚠ 素の台は<b>3段それぞれ1つだけ</b>ちらりと見せる。司書は<b>出うるもの全部</b>を読む。
+   *
+   * <p>⚠⚠ <b>候補を作っているのはバニラの {@code getEnchantmentList}</b>（Easy Magic は
+   * 自分のアクセサでそれを呼ぶだけ）。⚠ だから<b>「本には多く付く」も同じ一覧に効いていて</b>、
+   * ⚠ 司書の予告は<b>1つ捨てる前の並び</b>で出る。
+   *
+   * <p>⚠ 呼ぶのは {@code mixin/EasyMagicHintMixin} だけ。
+   * ⚠ 引数が {@link net.minecraft.world.entity.player.Player} なのは、
+   * 向こうの欄がその型だから。
+   */
+  public static boolean readsAllClues(final net.minecraft.world.entity.player.Player player) {
+
+    return ShiftingOrigins.Config.LIBRARIAN_ALL_CLUES.get()
+        && player instanceof ServerPlayer serverPlayer
+        && ClassPowers.isLibrarian(serverPlayer);
+  }
+
+  /**
+   * 上げ終わった必要レベルで、予告をもう一度送らせる。
+   *
+   * <p>⚠⚠ <b>これが無いと、司書の一覧は「上げる前の必要レベル」で出る</b>——
+   * 台は<b>必要レベルを決める → 予告を送る</b>まで一息で走り、
+   * ⚠ こちらが上げるのは<b>その次のtick</b>だから。
+   *
+   * <p>⚠ Easy Magic が無い日は、台がこの型を実装しないので<b>静かに外れる</b>。
+   */
+  private static void resendHints(final EnchantmentMenu menu) {
+
+    if (menu instanceof net.erutobusiness.shiftingorigins.mixin.EasyMagicSendAccessor sender) {
+      sender.shiftingorigins$sendEnchantingData(menu.getSlot(0).getItem());
+    }
   }
 
   /** ⚠ 倍率の計算は1か所だけ（2つの口で数字が割れないように）。 */

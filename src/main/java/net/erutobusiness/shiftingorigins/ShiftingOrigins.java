@@ -207,6 +207,15 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("book_keep",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /**
+   * 司書の「予告がすべて読める」（2026-09-09）。
+   * ⚠ 働いているのは {@code mixin/EasyMagicHintMixin} と {@link LibrarianEnchanting}。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> ALL_CLUES =
+      POWER_FACTORIES.register("all_clues",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
   public static final net.minecraftforge.registries.DeferredRegister<
       net.minecraft.world.effect.MobEffect> EFFECTS =
@@ -295,6 +304,7 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.IntValue SAPLING_MAX_STEPS;
     public static final ForgeConfigSpec.BooleanValue LIBRARIAN_ENCHANTING;
     public static final ForgeConfigSpec.BooleanValue LIBRARIAN_BOOK_KEEP;
+    public static final ForgeConfigSpec.BooleanValue LIBRARIAN_ALL_CLUES;
     public static final ForgeConfigSpec.BooleanValue CLERIC_BREW_SPEED;
     public static final ForgeConfigSpec.BooleanValue BLACKSMITH_REPAIR;
     public static final ForgeConfigSpec.BooleanValue BLACKSMITH_TOOLS;
@@ -531,6 +541,15 @@ public final class ShiftingOrigins {
               "Easy Magic reaches the same vanilla method through its accessor, so its",
               "enchantment hint follows along.")
           .define("keepBookEnchantment", true);
+      LIBRARIAN_ALL_CLUES = b
+          .comment("Easy Magic shows a hint of what an enchanting slot would give, but only",
+              "one entry per slot (its ServerConfig.enchantmentHint is SINGLE). A librarian",
+              "reads the whole roll instead: the hint call is handed ALL. The candidates come",
+              "from vanilla's EnchantmentMenu.getEnchantmentList, so keepBookEnchantment above",
+              "shapes this list too and the hint matches what the click will give.",
+              "Needs Easy Magic. Without it ShiftingOriginsMixinPlugin skips the mixin and",
+              "this option does nothing -- no crash, no log line.")
+          .define("readAllClues", true);
       b.pop();
       b.comment("The blacksmith's efficient_repairs, crafting-grid half. Upstream's",
               "RepairItemRecipeMixin returns the vanilla 5% unless the grid is a",

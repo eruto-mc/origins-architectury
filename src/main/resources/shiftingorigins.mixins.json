@@ -2,6 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.erutobusiness.shiftingorigins.mixin",
+  "plugin": "net.erutobusiness.shiftingorigins.ShiftingOriginsMixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "origins.refmap.json",
   "mixins": [
@@ -23,7 +24,9 @@
     "EntityRandomAccessor",
     "MobInteractMixin",
     "RunAroundLikeCrazyMixin",
-    "EnchantmentMenuBookMixin"
+    "EnchantmentMenuBookMixin",
+    "EasyMagicHintMixin",
+    "EasyMagicSendAccessor"
   ],
   "client": [
     "client.CameraMixin"
