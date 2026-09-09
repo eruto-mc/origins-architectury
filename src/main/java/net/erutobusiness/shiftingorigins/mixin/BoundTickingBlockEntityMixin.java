@@ -1,5 +1,6 @@
 package net.erutobusiness.shiftingorigins.mixin;
 
+import net.erutobusiness.shiftingorigins.BrewSpeed;
 import net.erutobusiness.shiftingorigins.CookSpeed;
 import net.erutobusiness.shiftingorigins.FurnaceSpeed;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -74,6 +75,27 @@ public abstract class BoundTickingBlockEntityMixin<T extends BlockEntity> {
   @Inject(method = "tick", at = @At("TAIL"))
   private void shiftingorigins$furnaceSpeed(CallbackInfo ci) {
     if (!FurnaceSpeed.shouldSpeedUp(this.blockEntity)
+        || this.blockEntity.isRemoved() || !this.blockEntity.hasLevel()) {
+      return;
+    }
+    this.ticker.tick(this.blockEntity.getLevel(), this.blockEntity.getBlockPos(),
+        this.blockEntity.getBlockState(), this.blockEntity);
+  }
+
+  /**
+   * 聖職者の近くの醸造台を2倍で回す（2026-09-09・あなたの決定）。
+   *
+   * <p>⚠ <b>料理人・鍛冶屋と同じ seam を使う</b>——新しい mixin を増やさない。
+   * ⚠ <b>台の判定は {@link BrewSpeed} 1か所。</b>
+   *
+   * <p>⚠ 醸造台は「勢い」を持たないので、{@code keepMomentum} のような打ち消しは要らない
+   * （進み具合は {@code brewTime} を1ずつ減らすだけ）。
+   *
+   * <p>⚠ これで火の分担が3つになる——調理台は料理人、かまどは鍛冶屋、醸造台は聖職者。
+   */
+  @Inject(method = "tick", at = @At("TAIL"))
+  private void shiftingorigins$brewSpeed(CallbackInfo ci) {
+    if (!BrewSpeed.shouldSpeedUp(this.blockEntity)
         || this.blockEntity.isRemoved() || !this.blockEntity.hasLevel()) {
       return;
     }

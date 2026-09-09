@@ -1,0 +1,5 @@
+{
+  "type": "shiftingorigins:book_keep",
+  "name": "本には多く付く",
+  "description": "本にエンチャントするとき、抽選で出た分を1つも落とさない。道具に付けるときは変わらない。"
+}

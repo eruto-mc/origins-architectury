@@ -18,7 +18,12 @@
     "LavaSwimMixin",
     "LivingEntityMixin",
     "BoundTickingBlockEntityMixin",
-    "SmithingMenuMixin"
+    "SmithingMenuMixin",
+    "VillagerPriceMixin",
+    "EntityRandomAccessor",
+    "MobInteractMixin",
+    "RunAroundLikeCrazyMixin",
+    "EnchantmentMenuBookMixin"
   ],
   "client": [
     "client.CameraMixin"

@@ -152,6 +152,35 @@ public final class ClassPowers {
     return hasOrigin(player, "origins-classes:merchant");
   }
 
+  /**
+   * そのプレイヤーが聖職者か。
+   *
+   * <p>⚠ 使う側は {@link BrewSpeed}（近くの醸造台が2倍）。
+   */
+  public static boolean isCleric(ServerPlayer player) {
+    return hasOrigin(player, "origins-classes:cleric");
+  }
+
+  /**
+   * そのプレイヤーが調教師か。
+   *
+   * <p>⚠ 使う側は {@link TamerLuck}（手なずけの抽選を2回振る）。
+   */
+  public static boolean isBeastmaster(ServerPlayer player) {
+    return hasOrigin(player, "origins-classes:beastmaster");
+  }
+
+  /**
+   * そのプレイヤーが司書か。
+   *
+   * <p>⚠ 使う側は {@link LibrarianEnchanting}（本のエンチャントを捨てない）。
+   * ⚠ <b>「エンチャントの心得」の側は職業を見ない</b>——あちらは power を持っているかで
+   * 判定しているので、⚠ <b>職業を移しても Java を1行も変えずに移った</b>。
+   */
+  public static boolean isLibrarian(ServerPlayer player) {
+    return hasOrigin(player, "world3:librarian");
+  }
+
   /** そのプレイヤーが指定の種族／職業を選んでいるか（層は問わない）。 */
   private static boolean hasOrigin(ServerPlayer player, String originId) {
     return io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer.get(player)

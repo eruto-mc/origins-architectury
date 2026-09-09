@@ -1,0 +1,5 @@
+{
+  "type": "shiftingorigins:steady_price",
+  "name": "据え置きの値",
+  "description": "村人の値上がりを受けない。同じ取引を繰り返しても、いつも元の値段で買える。"
+}

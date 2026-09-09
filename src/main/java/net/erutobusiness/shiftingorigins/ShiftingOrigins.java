@@ -176,6 +176,37 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("merchant_stock",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /**
+   * 聖職者の「醸造の手際」（2026-09-09）。⚠ 働いているのは {@link BrewSpeed}。
+   *
+   * <p>⚠ 料理人の {@code kitchen_hand}・鍛冶屋の {@code blacksmith_furnace} と同じ形の印。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> BREW_SPEED =
+      POWER_FACTORIES.register("brew_speed",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  /** 商人の「据え置きの値」（2026-09-09）。⚠ 働いているのは {@link MerchantPrice}。 */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> STEADY_PRICE =
+      POWER_FACTORIES.register("steady_price",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  /** 調教師の「懐かれる質」（2026-09-09）。⚠ 働いているのは {@link TamerLuck}。 */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> TAMER_LUCK =
+      POWER_FACTORIES.register("tamer_luck",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  /**
+   * 司書の「本には多く付く」（2026-09-09）。
+   * ⚠ 働いているのは {@code mixin/EnchantmentMenuBookMixin} と {@link LibrarianEnchanting}。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> BOOK_KEEP =
+      POWER_FACTORIES.register("book_keep",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
   public static final net.minecraftforge.registries.DeferredRegister<
       net.minecraft.world.effect.MobEffect> EFFECTS =
@@ -205,7 +236,7 @@ public final class ShiftingOrigins {
     //   `mixin/CraftingResultMixin`**（産物の枠を組む所を通す必要があるため）。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SaplingBonemeal.class);
     // ⚠ 聖職者のエンチャント。⚠ **鍛冶屋の修理は `mixin/CraftingResultMixin`**（産物の枠を通す）。
-    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(ClericEnchanting.class);
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(LibrarianEnchanting.class);
     // ⚠ 戦士の受け流しと背水。⚠ **盾を割られない側は mixin**（`Player.disableShield` を打ち切る）。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(WarriorCombat.class);
     // ⚠ `[種族・職業]` を Tab とサイドバーにだけ出す。名札・チャット・死亡メッセージには出さない。
@@ -262,7 +293,9 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.IntValue BONUS_PLANKS;
     public static final ForgeConfigSpec.BooleanValue SAPLING_BONEMEAL;
     public static final ForgeConfigSpec.IntValue SAPLING_MAX_STEPS;
-    public static final ForgeConfigSpec.BooleanValue CLERIC_ENCHANTING;
+    public static final ForgeConfigSpec.BooleanValue LIBRARIAN_ENCHANTING;
+    public static final ForgeConfigSpec.BooleanValue LIBRARIAN_BOOK_KEEP;
+    public static final ForgeConfigSpec.BooleanValue CLERIC_BREW_SPEED;
     public static final ForgeConfigSpec.BooleanValue BLACKSMITH_REPAIR;
     public static final ForgeConfigSpec.BooleanValue BLACKSMITH_TOOLS;
     public static final ForgeConfigSpec.BooleanValue BLACKSMITH_FURNACE;
@@ -273,6 +306,8 @@ public final class ShiftingOrigins {
     public static final ForgeConfigSpec.DoubleValue LAST_STAND_QUARTER;
     public static final ForgeConfigSpec.DoubleValue QUICK_BITE_FACTOR;
     public static final ForgeConfigSpec.DoubleValue MERCHANT_STOCK_KEPT;
+    public static final ForgeConfigSpec.BooleanValue MERCHANT_STEADY_PRICE;
+    public static final ForgeConfigSpec.BooleanValue BEASTMASTER_LUCK;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_LOGS;
 
     static {
@@ -461,18 +496,41 @@ public final class ShiftingOrigins {
 
       // ⚠ どちらも「上流の実装が前提にしている vanilla の器を、別の MOD が差し替えた」型。
       //   ⚠ 木こりと同じ形で、2026-09-05 の総当たり（selection/audits/class-powers-alive）で出た。
-      b.comment("The cleric's better_enchanting. Upstream relays the enchanter through an NBT",
-              "tag written in EnchantmentMenu.slotsChanged, because EnchantmentLevelSetEvent",
-              "does not carry a player. Easy Magic's ModEnchantmentMenu declares slotsChanged",
-              "itself and never calls the vanilla one, so the tag is never written and the",
-              "bonus never applies. This looks the enchanter up from the table position",
-              "instead, which does not depend on which mod owns the menu.")
+      b.comment("The cleric (2026-09-09: enchanting moved to the librarian, brewing added).")
           .push("cleric");
-      CLERIC_ENCHANTING = b
-          .comment("Whether the cleric's enchanting bonus is restored.",
+      CLERIC_BREW_SPEED = b
+          .comment("Brewing stands near a cleric run at double speed.",
+              "Same seam as the cook's stations and the smith's furnaces: the ticker is",
+              "called once more in LevelChunk$BoundTickingBlockEntity.tick.",
+              "Fuel is untouched -- blaze powder is spent when a brew starts, which is a",
+              "separate step from the brewTime countdown.")
+          .define("brewSpeed", true);
+      b.pop();
+
+      b.comment("The librarian's powers. better_enchanting moved off the cleric on",
+              "2026-09-09; the old key was cleric.enchantingBonus, and a config file",
+              "written before that date keeps the old section, which is simply ignored.",
+              "Upstream relays the enchanter through an NBT tag written in",
+              "EnchantmentMenu.slotsChanged, because EnchantmentLevelSetEvent does not",
+              "carry a player. Easy Magic's ModEnchantmentMenu declares slotsChanged itself",
+              "and never calls the vanilla one, so the tag is never written and the bonus",
+              "never applies. This looks the enchanter up from the table position instead,",
+              "which does not depend on which mod owns the menu.")
+          .push("librarian");
+      LIBRARIAN_ENCHANTING = b
+          .comment("Whether the librarian's enchanting bonus is restored.",
               "Turns itself off for a stack that already carries upstream's tag, so removing",
               "Easy Magic (or adding Apotheosis) needs no config change.")
           .define("enchantingBonus", true);
+      LIBRARIAN_BOOK_KEEP = b
+          .comment("Vanilla drops one rolled enchantment when the item being enchanted is a",
+              "plain book (EnchantmentMenu.getEnchantmentList removes a random entry once",
+              "list.size() > 1). A librarian does not lose it, so a book comes out with the",
+              "full roll. The nextInt that picked the victim is still consumed, so the",
+              "random stream -- and therefore the preview -- stays in step with the result.",
+              "Easy Magic reaches the same vanilla method through its accessor, so its",
+              "enchantment hint follows along.")
+          .define("keepBookEnchantment", true);
       b.pop();
       b.comment("The blacksmith's efficient_repairs, crafting-grid half. Upstream's",
               "RepairItemRecipeMixin returns the vanilla 5% unless the grid is a",
@@ -493,7 +551,8 @@ public final class ShiftingOrigins {
       BLACKSMITH_FURNACE = b
           .comment("Furnaces and blast furnaces near a blacksmith run at double speed.",
               "Smokers are excluded: those belong to the cook, whose own power leaves",
-              "furnaces alone. The two classes divide the fires between them.")
+              "furnaces alone. Since 2026-09-09 the brewing stand belongs to the cleric,",
+              "so three classes divide the fires between them.")
           .define("furnaceSpeed", true);
       b.pop();
 
@@ -549,6 +608,29 @@ public final class ShiftingOrigins {
               "upstream's never-runs-out behaviour; 0 turns the power off without removing it",
               "from the class.")
           .defineInRange("stockKeptChance", 0.5D, 0.0D, 1.0D);
+      MERCHANT_STEADY_PRICE = b
+          .comment("A merchant does not pay the demand surcharge (2026-09-09).",
+              "A trade's price is base + floor(count * demand * priceMultiplier) +",
+              "specialPriceDiff. demand belongs to the offer and rises in Villager.restock,",
+              "which does not know who traded, so the surcharge can only be cancelled per",
+              "player through specialPriceDiff -- and exactly by the amount it added.",
+              "Prices never drop below the base price.")
+          .define("steadyPrice", true);
+      b.pop();
+
+      b.comment("The beastmaster's taming luck (2026-09-09). Taming is implemented per",
+              "creature and there is no shared hook: AnimalTameEvent only fires after the",
+              "roll succeeded. What all of them do share is the creature's own RandomSource",
+              "-- 19 of the 20 implementations we disassembled roll on it, and all of them",
+              "treat small/true as success. So the roll is doubled at its source: while a",
+              "beastmaster interacts with an untamed creature, nextInt/nextFloat return the",
+              "smaller of two rolls and nextBoolean the OR of two. A wolf goes from 1/3 to",
+              "5/9. Horses roll in RunAroundLikeCrazyGoal instead, which gets the same",
+              "treatment while a beastmaster is riding.")
+          .push("beastmaster");
+      BEASTMASTER_LUCK = b
+          .comment("Whether taming rolls twice and keeps the better result.")
+          .define("tamingLuck", true);
       b.pop();
 
       b.comment("Which revival wins when a player holding a Totem of Undying takes a lethal",

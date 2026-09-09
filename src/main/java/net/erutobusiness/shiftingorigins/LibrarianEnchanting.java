@@ -26,7 +26,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
- * 聖職者の「エンチャントの心得」を、どのエンチャント台でも働かせる（2026-09-06）。
+ * 司書の「エンチャントの心得」を、どのエンチャントテーブルでも働かせる。
  *
  * <p>⚠⚠ <b>上流の仕掛けは、この世界では最初から一度も走っていなかった。</b>
  * 上流は2段構え——{@code EnchantmentMenu.slotsChanged} が
@@ -58,9 +58,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * こちらはその後で書き換えるため）。⚠ <b>部員から「40 の内容がよくなってるように見えない」
  * と報告が来て分かった。</b> 作り直しは {@link #retellClues} を見ること。
  */
-public final class ClericEnchanting {
+public final class LibrarianEnchanting {
 
-  private ClericEnchanting() {
+  private LibrarianEnchanting() {
   }
 
   /** ⚠ バニラの {@code EnchantmentMenu.stillValid} と同じ範囲（8ブロック＝64を平方で見る）。 */
@@ -82,11 +82,22 @@ public final class ClericEnchanting {
    */
   private static final Map<UUID, int[]> LAST_APPLIED = new HashMap<>();
 
+  /**
+   * いまその画面を開いている人。
+   *
+   * <p>⚠⚠ <b>{@code EnchantmentMenu.getEnchantmentList} の中では人が引けない</b>——
+   * vanilla のメニューは人を持たないし、Easy Magic が持っている {@code player} は
+   * ⚠ <b>あちらの private</b>。だから<b>毎tickここで控えておく</b>。
+   *
+   * <p>⚠ {@link java.util.WeakHashMap} で持つ——画面が閉じれば勝手に消える。
+   */
+  private static final Map<EnchantmentMenu, ServerPlayer> OPENERS = new java.util.WeakHashMap<>();
+
   /** 上流の経路が生きている世界のための口（バニラの台・Apotheosis など）。 */
   @SubscribeEvent(priority = EventPriority.LOWEST)
   public static void onEnchantmentLevel(final EnchantmentLevelSetEvent event) {
 
-    if (!ShiftingOrigins.Config.CLERIC_ENCHANTING.get()
+    if (!ShiftingOrigins.Config.LIBRARIAN_ENCHANTING.get()
         || !(event.getLevel() instanceof ServerLevel level)) {
       return;
     }
@@ -113,7 +124,7 @@ public final class ClericEnchanting {
   public static void onPlayerTick(final TickEvent.PlayerTickEvent event) {
 
     if (event.phase != TickEvent.Phase.END
-        || !ShiftingOrigins.Config.CLERIC_ENCHANTING.get()
+        || !ShiftingOrigins.Config.LIBRARIAN_ENCHANTING.get()
         || !(event.player instanceof ServerPlayer player)) {
       return;
     }
@@ -121,6 +132,8 @@ public final class ClericEnchanting {
       LAST_APPLIED.remove(player.getUUID());
       return;
     }
+    // ⚠ 「この画面を開いているのは誰か」を控える（`getEnchantmentList` の中で引くため）
+    OPENERS.put(menu, player);
     // ⚠ 上流の経路が同じ画面を握っているなら、こちらは何もしない（二重に掛けない）
     final Long seen = EVENT_SEEN.get(player.getUUID());
     if (seen != null && player.level().getGameTime() - seen < 40L) {
@@ -183,7 +196,13 @@ public final class ClericEnchanting {
       final List<EnchantmentInstance> list =
           EnchantmentHelper.selectEnchantment(rng, stack, costs[i], false);
       if (stack.is(Items.BOOK) && list.size() > 1) {
-        list.remove(rng.nextInt(list.size()));
+        // ⚠⚠ **司書は捨てない。** ⚠ ただし<b>乱数は必ず1回消費する</b>——
+        //    消費しないと、この後の `list.get(rng.nextInt(...))` から先で
+        //    ⚠ <b>予告と結果の乱数の並びがずれる</b>（当部は一度そのずれを踏んでいる）。
+        final int victim = rng.nextInt(list.size());
+        if (!keepsBookEnchantment(menu)) {
+          list.remove(victim);
+        }
       }
       if (list.isEmpty()) {
         continue;
@@ -200,6 +219,27 @@ public final class ClericEnchanting {
       .PlayerLoggedOutEvent event) {
     EVENT_SEEN.remove(event.getEntity().getUUID());
     LAST_APPLIED.remove(event.getEntity().getUUID());
+  }
+
+  /**
+   * その画面で、本のエンチャントを1つ捨てずに済むか（＝開いているのが司書か）。
+   *
+   * <p>⚠⚠ <b>バニラは本のときだけ抽選から1つ捨てている</b>
+   * （{@code EnchantmentMenu.getEnchantmentList} の
+   * {@code if (stack.is(Items.BOOK) && list.size() > 1) list.remove(...)}。
+   * 1.20.1 の本体を逆アセンブルして確かめた）。⚠ 司書はそれを捨てない。
+   *
+   * <p>⚠ 呼ぶのは2か所——{@link #retellClues}（予告）と
+   * {@code mixin/EnchantmentMenuBookMixin}（結果）。⚠ <b>両方が同じ答えを使う</b>ので、
+   * ⚠⚠ <b>予告と結果がずれない。</b>
+   */
+  public static boolean keepsBookEnchantment(final EnchantmentMenu menu) {
+
+    if (!ShiftingOrigins.Config.LIBRARIAN_BOOK_KEEP.get()) {
+      return false;
+    }
+    final ServerPlayer player = OPENERS.get(menu);
+    return player != null && ClassPowers.isLibrarian(player);
   }
 
   /** ⚠ 倍率の計算は1か所だけ（2つの口で数字が割れないように）。 */
