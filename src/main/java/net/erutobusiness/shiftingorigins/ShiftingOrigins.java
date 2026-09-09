@@ -133,6 +133,49 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("sapling_bonemeal",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /**
+   * ⚠⚠ <b>残っていた4つの印を、当部の型へそろえた</b>（2026-09-09・あなたの指示
+   * 「そもそも動くのを Java に統一して Java を機械で引ける手を考えるべきなのでは？」）。
+   *
+   * <p>それまでこの4つは {@code apoli:simple} を書いていた。⚠ <b>中身は同じ
+   * {@link io.github.edwinmindcraft.apoli.common.power.DummyPower}</b> なので
+   * <b>挙動は1ミリも変わらない</b>——変わるのは<b>機械から見分けが付くこと</b>だけ。
+   *
+   * <p>⚠ <b>なぜ見分けが要るか</b>: {@code apoli:simple} を当部は2通りに使っていた。
+   * <ul>
+   *   <li>働いているのは Java の側で、JSON は<b>一覧に名前を出すための印</b>（生きている）</li>
+   *   <li>上流の能力を<b>殺すため</b>に無害な内容で上書きした残骸（何も働かない）</li>
+   * </ul>
+   * ⚠⚠ <b>JSON を見ただけでは、この2つを見分けられなかった。</b> 実際
+   * {@code origins-classes:explorer_kit}（開始装備を殺した残骸）は、
+   * <b>人が目で見つけるまで検査を素通りしていた</b>。
+   *
+   * <p>⇒ 印は当部の型にする。型はここに在るので<b>登録に無い型を書けば起動時に落ちる</b>＝
+   * ⚠ <b>「当部の名前空間で {@code apoli:simple} なら残骸」と機械が言い切れる</b>
+   * （{@code dev/verify/check_origin_powers.py} の②）。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> POTION_SHARING =
+      POWER_FACTORIES.register("potion_sharing",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> SKELETON_SHY =
+      POWER_FACTORIES.register("skeleton_shy",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  /** 木こりの「板の取り方」。⚠ 働いているのは {@link LumberjackPlanks}。 */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> EXTRA_PLANKS =
+      POWER_FACTORIES.register("extra_planks",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
+  /** 商人の「尽きにくい品揃え」。⚠ 働いているのは {@link MerchantStock}。 */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.power.DummyPower> MERCHANT_STOCK =
+      POWER_FACTORIES.register("merchant_stock",
+          io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
+
   /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
   public static final net.minecraftforge.registries.DeferredRegister<
       net.minecraft.world.effect.MobEffect> EFFECTS =

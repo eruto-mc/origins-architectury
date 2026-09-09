@@ -1,4 +1,4 @@
 {
-  "type": "apoli:simple",
+  "type": "shiftingorigins:merchant_stock",
   "loading_priority": 100
 }
