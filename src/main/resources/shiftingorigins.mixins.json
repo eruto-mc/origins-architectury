@@ -26,7 +26,8 @@
     "RunAroundLikeCrazyMixin",
     "EnchantmentMenuBookMixin",
     "EasyMagicHintMixin",
-    "EasyMagicSendAccessor"
+    "EasyMagicSendAccessor",
+    "LunchboxDietMixin"
   ],
   "client": [
     "client.CameraMixin"

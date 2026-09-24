@@ -216,6 +216,28 @@ public final class ShiftingOrigins {
       POWER_FACTORIES.register("all_clues",
           io.github.edwinmindcraft.apoli.common.power.DummyPower::new);
 
+  /** 当部の品の条件（power の {@code item_condition} で使う）。 */
+  public static final net.minecraftforge.registries.DeferredRegister<
+      io.github.edwinmindcraft.apoli.api.power.factory.ItemCondition<?>> ITEM_CONDITIONS =
+      net.minecraftforge.registries.DeferredRegister.create(
+          io.github.edwinmindcraft.apoli.api.registry.ApoliRegistries.ITEM_CONDITION_KEY, MOD_ID);
+
+  /**
+   * 飲む物か（使うときの動きが「飲む」）——2026-09-24・あなたの判断「飲み物は飲めるべき」。
+   *
+   * <p>⚠ 肉食（{@code origins:carnivore}）の「肉しか食べられない」から飲み物を外すのに使う
+   * （上書きは {@code origins_setup/build.py}）。⚠ 上流の肉食は「食べ物で肉でない物」を全部止めるので、
+   * ⚠ <b>ワイン・お茶・コーヒーも止まっていた</b>。
+   *
+   * <p>⚠ <b>名前の一覧ではなく動きで見る。</b> 一覧（{@code origins:ignore_diet}）に並べると、
+   * ⚠ 新しく入った MOD の飲み物が<b>黙って飲めないまま</b>になる（漏れたら静かに落ちる側）。
+   */
+  public static final net.minecraftforge.registries.RegistryObject<
+      io.github.edwinmindcraft.apoli.common.condition.item.SimpleItemCondition> DRINK =
+      ITEM_CONDITIONS.register("drink",
+          () -> new io.github.edwinmindcraft.apoli.common.condition.item.SimpleItemCondition(
+              stack -> stack.getUseAnimation() == net.minecraft.world.item.UseAnim.DRINK));
+
   /** 浮遊のアイコンを出すためだけの状態効果（{@link HoverEffect}）。 */
   public static final net.minecraftforge.registries.DeferredRegister<
       net.minecraft.world.effect.MobEffect> EFFECTS =
@@ -228,6 +250,7 @@ public final class ShiftingOrigins {
 
   public ShiftingOrigins() {
     POWER_FACTORIES.register(FMLJavaModLoadingContext.get().getModEventBus());
+    ITEM_CONDITIONS.register(FMLJavaModLoadingContext.get().getModEventBus());
     EFFECTS.register(FMLJavaModLoadingContext.get().getModEventBus());
     // ⚠ 浮遊が入っていることをバフ欄へ出す係。⚠ **動きとは無関係**（止まっても浮遊は効く）。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(HoverDisplay.class);
