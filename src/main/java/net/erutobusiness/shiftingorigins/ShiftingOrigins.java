@@ -276,6 +276,9 @@ public final class ShiftingOrigins {
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(NameLabels.class);
     // ⚠ 精気吸収がアンデッドから吸えていた（上流の説明は「効かない」と書いているのに実装が無い）
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SiphonGuard.class);
+    // ⚠ プレイヤーが配った悪い効果（Pixie のニセの爆発・Revenant の骨の壁の雲）で倒れた相手に、
+    //   使った人を「やった人」として記録する（死亡メッセージの名前・経験値・プレイヤーが倒したときだけの落とし物）。
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(EffectCredit.class);
     // ⚠ 種族の蘇りを、不死のトーテムより先に働かせる。⚠ **トーテムは減らない**（理由は当のクラス）。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(UndyingBeforeTotem.class);
     // ⚠ 鍛冶屋の道具と型は減らない（金床が欠けない側）。
