@@ -328,7 +328,7 @@ public class OriginDisplayScreen extends Screen {
 			for (Holder<ConfiguredPower<?, ?>> raw : rawPowers) {
 				// ⚠⚠ **当部の直し（2026-09-01）: 結合していない能力を、id で引き直す。**
 				//
-				//    ⚠ **段5 と同じ形を1段下でやる。** 段5 は**種族**を層から引き直したが、
+				//    ⚠ **段階5 と同じ形を1つ下の層でやる。** 段階5 は**種族**を層から引き直したが、
 				//    ⚠⚠ **種族が抱えている能力の Holder は引き直していなかった。**
 				//
 				//    ⚠ **なぜ要るか（実機で測った・2026-09-01）**: 同じ jar・同じデータで
@@ -474,8 +474,8 @@ public class OriginDisplayScreen extends Screen {
 		//
 		//    ⚠ **なぜ表示名を出さないか**: 表示名は翻訳された日本語で、
 		//    ⚠ Minecraft のログの出力は機械の既定の文字コードを使う（当部の Windows は cp932）。
-		//    ⚠⚠ **UTF-8 前提の道具で引くと読めない**——2026-09-01 に私がそれで
-		//    「0 件＝正常」と誤報した。⚠ **翻訳の鍵なら ASCII なので、どの道具でも引ける。**
+		//    ⚠⚠ **UTF-8 前提のツールで引くと読めない**——2026-09-01 に私がそれで
+		//    「0 件＝正常」と誤報した。⚠ **翻訳の鍵なら ASCII なので、どのツールでも引ける。**
 		String selfName;
 		try {
 			net.minecraft.network.chat.ComponentContents c = origin.getName().getContents();

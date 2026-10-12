@@ -29,7 +29,7 @@ import net.minecraft.world.item.ItemStack;
  * <p><b>やり方</b>: 木こりと同じ seam（{@code CraftingMenu.slotChangedCraftingGrid} が
  * 組み上げた産物）で、<b>耐久の戻り分だけ</b>を計算し直す。
  *
- * <p>⚠ <b>バニラの式をそのまま写す</b>（{@code RepairItemRecipe.assemble} を読んで確認）:
+ * <p>⚠ <b>バニラの式をそのままコピーする</b>（{@code RepairItemRecipe.assemble} を読んで確認）:
  *
  * <pre>
  *   残り = (最大-傷1) + (最大-傷2) + 最大 * <b>5</b> / 100

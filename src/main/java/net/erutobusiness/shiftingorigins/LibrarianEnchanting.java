@@ -80,10 +80,10 @@ public final class LibrarianEnchanting {
   private static final Map<UUID, Long> EVENT_SEEN = new HashMap<>();
 
   /**
-   * こちらが書き換えた直後の {@code costs} の写し。
+   * こちらが書き換えた直後の {@code costs} のコピー。
    *
    * <p>⚠⚠ <b>これが無いと毎tick掛け続けて青天井になる。</b>
-   * 台が計算し直すと値が変わるので、<b>写しと違うときだけ</b>手を入れる。
+   * 台が計算し直すと値が変わるので、<b>コピーと違うときだけ</b>手を入れる。
    */
   private static final Map<UUID, int[]> LAST_APPLIED = new HashMap<>();
 
@@ -175,7 +175,7 @@ public final class LibrarianEnchanting {
    * ⚠ だから<b>必要レベルだけ 40 になり、予告は 30 のときのまま</b>出ていた。
    * ⚠ 部員の報告「40 の内容がよくなってるようには見えない」はこれ。
    *
-   * <p>⚠ <b>作り方はバニラの {@code getEnchantmentList} を1命令ずつ写した</b>
+   * <p>⚠ <b>作り方はバニラの {@code getEnchantmentList} を1命令ずつコピーした</b>
    * （79 バイトの中身を逆アセンブルした）——⚠ <b>種を {@code 種 + 段} で置き直し、
    * {@code selectEnchantment} を呼び、本なら1つ抜き、残りから1つ選ぶ</b>。
    * ⚠⚠ <b>押したときに実際に走るのはこのバニラの経路</b>（Easy Magic は再抽選のときだけ

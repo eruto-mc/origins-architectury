@@ -31,7 +31,7 @@ import net.minecraftforge.common.ForgeMod;
  * <h2>やり方（既製品から借りた当て所）</h2>
  *
  * <p>{@code Swim In Lava}（CurseForge・1.20.1 Forge）の jar を読んで、
- * <b>3つの当て所</b>を採った。⚠ <b>コードは写していない</b>——判定が違うため
+ * <b>3つの当て所</b>を採った。⚠ <b>コードはコピーしていない</b>——判定が違うため
  * （あちらは {@code fireImmune()} か火炎耐性の効果で見る。
  * ⚠⚠ <b>ブレイズボーンの {@code origins:fire_immunity} は {@code apoli:invulnerability} なので
  * どちらにも当たらず、あの MOD をそのまま入れても効かない</b>）。
