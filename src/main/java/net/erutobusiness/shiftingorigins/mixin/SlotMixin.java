@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 出口①: <b>画面のある台から取り出す</b>。
  *
  * <p>⚠ <b>{@code Slot} を対象にすると、すべての画面のすべての枠に当たる。</b>
- * 上流のように台ごとに当てる必要が無くなる代わりに、
+ * 元の MOD のように台ごとに当てる必要が無くなる代わりに、
  * <b>チェストから出した食べ物にも当たってしまう</b>ので、
  * 「<b>物を置けない枠</b>」（{@code mayPlace} が偽）に絞る——それが産物の枠の印。
  *

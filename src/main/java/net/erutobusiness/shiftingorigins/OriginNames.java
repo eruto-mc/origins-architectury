@@ -97,7 +97,7 @@ public final class OriginNames {
    *
    * <p>⚠ 層の id は {@code getOrigins()} の鍵の {@code location()} で見る。
    * こうすると Origins の registry key の定数を持たずに済み、
-   * 上流の作りが変わっても壊れにくい。
+   * 元の MOD の作りが変わっても壊れにくい。
    */
   public static String label(Player player) {
     load();

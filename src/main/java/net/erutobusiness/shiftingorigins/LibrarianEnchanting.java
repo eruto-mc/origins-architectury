@@ -28,8 +28,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 /**
  * 司書の「エンチャントの心得」を、どのエンチャントテーブルでも働かせる。
  *
- * <p>⚠⚠ <b>上流の仕掛けは、この世界では最初から一度も走っていなかった。</b>
- * 上流は2段構え——{@code EnchantmentMenu.slotsChanged} が
+ * <p>⚠⚠ <b>元の MOD の仕掛けは、この世界では最初から一度も走っていなかった。</b>
+ * 元の MOD は2段構え——{@code EnchantmentMenu.slotsChanged} が
  * <b>エンチャントする人の UUID を道具の NBT へ書き</b>、
  * {@code EnchantmentLevelSetEvent} が<b>それを読んで</b>人を引き当てる
  * （イベントが人を持っていないため）。
@@ -56,7 +56,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  *
  * <p>⚠ <b>実際に付くエンチャントも正しく上がる。</b> 押した時点の {@code costs} を
  * {@code EnchantmentMenu.clickMenuButton} が読むので、書き換えた値がそのまま使われる
- * （Easy Magic はこのメソッドを上流へ委ねている・定数プールで確認）。
+ * （Easy Magic はこのメソッドを元の MOD へ委ねている・定数プールで確認）。
  *
  * <p>⚠⚠ <b>予告も作り直す（2026-09-06 追加）。</b> それまでは<b>必要レベルだけ上がって、
  * 予告は上げる前の数字のまま</b>出ていた（台は costs を決めた直後に予告を作り、
@@ -72,10 +72,10 @@ public final class LibrarianEnchanting {
   private static final double REACH_SQR = 64.0D;
 
   /**
-   * ⚠ 上流の経路（イベント）が走った時刻を人ごとに覚える。
+   * ⚠ 元の MOD の経路（イベント）が走った時刻を人ごとに覚える。
    *
    * <p>⚠⚠ <b>二重に掛けないための印。</b> Easy Magic を外した日や、
-   * 上流の台に戻した日には<b>イベントが飛ぶ</b>ので、そのときは向こうに任せる。
+   * 元の MOD の台に戻した日には<b>イベントが飛ぶ</b>ので、そのときは向こうに任せる。
    */
   private static final Map<UUID, Long> EVENT_SEEN = new HashMap<>();
 
@@ -98,7 +98,7 @@ public final class LibrarianEnchanting {
    */
   private static final Map<EnchantmentMenu, ServerPlayer> OPENERS = new java.util.WeakHashMap<>();
 
-  /** 上流の経路が生きている世界のための口（バニラの台・Apotheosis など）。 */
+  /** 元の MOD の経路が生きている世界のための口（バニラの台・Apotheosis など）。 */
   @SubscribeEvent(priority = EventPriority.LOWEST)
   public static void onEnchantmentLevel(final EnchantmentLevelSetEvent event) {
 
@@ -106,7 +106,7 @@ public final class LibrarianEnchanting {
         || !(event.getLevel() instanceof ServerLevel level)) {
       return;
     }
-    // ⚠ 上流が印を書けているなら、そちらが同じことをする。触らない。
+    // ⚠ 元の MOD が印を書けているなら、そちらが同じことをする。触らない。
     final ItemStack stack = event.getItem();
     if (stack.hasTag() && CommonUtils.getOriginsClassesTag(stack.getTag())
         .contains(CommonUtils.ENCHANTER, Tag.TAG_INT_ARRAY)) {
@@ -139,7 +139,7 @@ public final class LibrarianEnchanting {
     }
     // ⚠ 「この画面を開いているのは誰か」を控える（`getEnchantmentList` の中で引くため）
     OPENERS.put(menu, player);
-    // ⚠ 上流の経路が同じ画面を握っているなら、こちらは何もしない（二重に掛けない）
+    // ⚠ 元の MOD の経路が同じ画面を握っているなら、こちらは何もしない（二重に掛けない）
     final Long seen = EVENT_SEEN.get(player.getUUID());
     if (seen != null && player.level().getGameTime() - seen < 40L) {
       return;
@@ -179,7 +179,7 @@ public final class LibrarianEnchanting {
    * （79 バイトの中身を逆アセンブルした）——⚠ <b>種を {@code 種 + 段} で置き直し、
    * {@code selectEnchantment} を呼び、本なら1つ抜き、残りから1つ選ぶ</b>。
    * ⚠⚠ <b>押したときに実際に走るのはこのバニラの経路</b>（Easy Magic は再抽選のときだけ
-   * 自分で処理し、エンチャント本体は上流へ渡している）。⚠ <b>予告と結果がずれない。</b>
+   * 自分で処理し、エンチャント本体は元の MOD へ渡している）。⚠ <b>予告と結果がずれない。</b>
    *
    * <p>⚠ 乱数は<b>自前のものを同じ種で回す</b>。台の {@code random} は private なので触れず、
    * ⚠ 種を置き直す作りのおかげで<b>前の状態に依らず同じ並びになる</b>。

@@ -52,7 +52,7 @@ public final class PacedBreakQueue {
     }
 
     if (ShiftingOrigins.Config.INTERVAL_TICKS.get() <= 0) {
-      return false;   // 0 なら横取りしない＝上流どおり同じ tick で全部壊れる
+      return false;   // 0 なら横取りしない＝元の MOD どおり同じ tick で全部壊れる
     }
     Job job = new Job(serverPlayer, origin, positions);
     if (ShiftingOrigins.Config.verbose()) {
@@ -114,7 +114,7 @@ public final class PacedBreakQueue {
     /**
      * 壊す順番を決める。**掘った位置から繋がりを辿った順**（幅優先）。
      *
-     * <p>⚠ 上流が返すのは**順序を持たない集合**なので、そのまま壊すとバラバラの順になる。
+     * <p>⚠ 元の MOD が返すのは**順序を持たない集合**なので、そのまま壊すとバラバラの順になる。
      *
      * <p>⚠ 2026-08-04 まで「掘った位置からの直線距離順」で並べていた。まっすぐな幹なら同じ結果に
      * なるが、**曲がった鉱脈では破壊の先頭が飛ぶ**。C の字に曲がった鉱脈だと、掘った所から
@@ -122,8 +122,8 @@ public final class PacedBreakQueue {
      * 掘った位置から数えて 36 個中 8 番目に消えていた。繋がり順なら 32 番目）。
      * 幅優先なら**壊す位置は必ず、直前までに壊した所と隣り合っている**。
      *
-     * <p>繋がりの向きは上流の探索と揃える必要が無い（上流より広い26方向で辿るだけなので、
-     * 上流が集めた集合は必ず辿り切れる）。それでも届かないものが残ったら、
+     * <p>繋がりの向きは元の MOD の探索と揃える必要が無い（元の MOD より広い26方向で辿るだけなので、
+     * 元の MOD が集めた集合は必ず辿り切れる）。それでも届かないものが残ったら、
      * 取りこぼさないように末尾へ直線距離順で付ける。
      */
     private static Deque<BlockPos> orderFromOrigin(BlockPos origin, List<BlockPos> positions) {
@@ -156,7 +156,7 @@ public final class PacedBreakQueue {
       }
 
       if (!pool.isEmpty()) {
-        // 繋がっていなかったぶん（上流の探索が斜めをまたいだ等）。掘った所に近い順で最後に付ける
+        // 繋がっていなかったぶん（元の MOD の探索が斜めをまたいだ等）。掘った所に近い順で最後に付ける
         List<BlockPos> rest = new ArrayList<>(pool);
         rest.sort(java.util.Comparator.comparingDouble(p -> p.distSqr(origin)));
         ordered.addAll(rest);

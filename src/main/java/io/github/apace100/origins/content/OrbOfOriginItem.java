@@ -34,7 +34,7 @@ public class OrbOfOriginItem extends Item {
 	/**
 	 * eruto patch: 珠を重ねられる上限（2026-09-01 に mixin から畳んだ）。
 	 *
-	 * <p>⚠ 上流はコンストラクタで {@code stacksTo(1)} と<b>焼き込んで</b>いる。当部は珠を
+	 * <p>⚠ 本家はコンストラクタで {@code stacksTo(1)} と<b>焼き込んで</b>いる。当部は珠を
 	 * 実績の褒美として配るので、1個ずつ枠を潰されると持ち物が埋まる。
 	 *
 	 * <p>⚠ <b>コンストラクタの値は変えない。</b> バニラの {@code Item#getMaxStackSize()} は
@@ -108,7 +108,7 @@ public class OrbOfOriginItem extends Item {
 	/**
 	 * eruto patch: 説明欄の「」を直す（2026-09-01 に mixin から畳んだ）。
 	 *
-	 * <p>⚠ 上流は珠が指す種族が {@code Origin.EMPTY} と<b>同一オブジェクトなら</b>
+	 * <p>⚠ 本家は珠が指す種族が {@code Origin.EMPTY} と<b>同一オブジェクトなら</b>
 	 * 「新しい〜を選び直せる」、違えば「〜を『(名前)』にする」と出す。
 	 * ⚠⚠ 当部の珠は NBT に {@code Origin:"origins:empty"} を持ち、これは
 	 * <b>レジストリから引いた別のオブジェクト</b>なので後者に落ちる。
@@ -131,7 +131,7 @@ public class OrbOfOriginItem extends Item {
 		}
 	}
 
-	/** eruto patch: 名前を持たない種族＝「未選択に戻す」ための指定。上流の {@code Origin.EMPTY} も含む。 */
+	/** eruto patch: 名前を持たない種族＝「未選択に戻す」ための指定。本家の {@code Origin.EMPTY} も含む。 */
 	private static boolean isBlankOrigin(Origin origin) {
 		return origin == Origin.EMPTY || origin.getName().getString().isEmpty();
 	}

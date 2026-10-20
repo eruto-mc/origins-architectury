@@ -13,17 +13,17 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 /**
  * 商人が取引すると、<b>その取引の在庫が確率で減らない</b>（2026-09-07）。
  *
- * <p>⚠⚠ <b>上流は「絶対に減らない」だった。</b> {@code origins-classes:trade_availability}
+ * <p>⚠⚠ <b>元の MOD は「絶対に減らない」だった。</b> {@code origins-classes:trade_availability}
  * （尽きない品揃え）の実体は {@code origins_classes:infinite_trade} という中身の無い power で、
  * 働いているのは {@code dev.limonblaze.originsclasses.core.mixin.common.minecraft
  * .AbstractVillagerMixin} が {@code notifyTrade} の末尾で {@code --offer.uses} すること。
  * ⚠ 1回ぶん増えた使用回数を、そのまま戻している。
  *
- * <p><b>やり方</b>: 上流の power は無害な定義で上書きし
+ * <p><b>やり方</b>: 元の MOD の power は無害な定義で上書きし
  * （{@code data/origins-classes/powers/trade_availability.json} の
  * {@code apoli:simple} ＋ {@code loading_priority: 100}）、
  * ⚠ <b>職業を直に見るこちらが、確率で同じことをする。</b>
- * ⚠ 上流の power を持たなくなるので、⚠⚠ <b>上流の mixin は一度も発火しない</b>
+ * ⚠ 元の MOD の power を持たなくなるので、⚠⚠ <b>元の MOD の mixin は一度も発火しない</b>
  * （あちらの判定は {@code IPowerContainer.hasPower(…, INFINITE_TRADE)} 1本だけ）。
  * ⚠ {@code hidden} は立てていないので、能力の一覧と日本語の説明はこれまでどおり出る。
  *
@@ -33,7 +33,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * {@code notifyTrade} の<b>最後の1行</b>に
  * {@code EVENT_BUS.post(new TradeWithVillagerEvent(this.tradingPlayer, offer, this))} を足しており、
  * ⚠ <b>{@code @At("TAIL")} で入るのと同じ位置・同じ時点</b>（使用回数が増えた後）。
- * ⚠ 上流 origins-classes がここを mixin でやっているのは、
+ * ⚠ 元の MOD origins-classes がここを mixin でやっているのは、
  * ⚠⚠ <b>このイベントが Forge 47.1 の時点では無かったから</b>（47.3 の patch には在り、
  * 47.1 の patch には無い。両方の userdev を開いて確かめた）。
  *
@@ -46,12 +46,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * <b>直すべき問題として挙げている5件</b>と同じ型を1件増やす。
  *
  * <p>⚠⚠ <b>画面のずれ</b>: 取引の残り回数は<b>クライアントも自分で数えている</b>
- * （{@code ClientSideMerchant.notifyTrade}）。⚠ 上流はそこを
+ * （{@code ClientSideMerchant.notifyTrade}）。⚠ 元の MOD はそこを
  * {@code OriginsClasses.INFINITE_TRADER} という真偽値1つで合わせていたが、
  * ⚠⚠ <b>その値が決まるのは「村人を右クリックした瞬間の1回」だけ</b>
  * （{@code PowerEventHandler.onInteractEntity}）。⚠ 確率にすると、その1回の目と
  * 取引ごとの目が食い違い、<b>売り切れの×が出る時期がサーバとずれる</b>。
- * ⚠ ここでは上流の power を殺してあるので<b>クライアントは素のバニラとして数え</b>、
+ * ⚠ ここでは元の MOD の power を殺してあるので<b>クライアントは素のバニラとして数え</b>、
  * ⚠ <b>減らさなかったときだけサーバから品書きを送り直して合わせる</b>（{@link #resend}）。
  *
  * <p>⚠ バニラの取引画面に<b>残り回数の数字は無い</b>（売り切れかどうかの×だけ）ので、

@@ -30,15 +30,15 @@ import org.slf4j.LoggerFactory;
  * つまり<b>右クリックで収穫するかぎり、農家の能力は一度も発動しない</b>。
  * 当部は Harvest with Ease を入れているので、<b>部員の自然な遊び方だと死んでいた</b>。
  *
- * <p>⚠ <b>倍率を自分で書かない。</b> 上流と同じ経路
+ * <p>⚠ <b>倍率を自分で書かない。</b> 元の MOD と同じ経路
  * （{@code IPowerContainer.modify} → {@code rollInt}）で値を取るので、
  * datapack で倍率を変えたらこちらも自動で追随する。
  * 数字を2か所に書くと、必ず片方が腐る。
  *
- * <p>⚠ <b>上流の抽選と同じ形にする。</b> base 1.0 に power の修正を掛け、
+ * <p>⚠ <b>元の MOD の抽選と同じ形にする。</b> base 1.0 に power の修正を掛け、
  * 小数部を確率として切り上げる（1.3 なら 30% で 2）。
  * 得られた n に対して<b>ドロップ一式を n 回ぶんにする</b>——
- * 上流は {@code dropResources} を n-1 回追加で呼ぶが、
+ * 元の MOD は {@code dropResources} を n-1 回追加で呼ぶが、
  * こちらはイベントが持つドロップ一覧を書き換える形になる。
  */
 @Mod.EventBusSubscriber(modid = ShiftingOrigins.MOD_ID)
@@ -67,7 +67,7 @@ public final class HarvestWithEaseBonus {
     ServerLevel level = event.getLevel();
     BlockPos pos = event.getPos();
 
-    // ⚠ 上流と同じ経路で「一式を何倍にするか」の素の値を取る。
+    // ⚠ 元の MOD と同じ経路で「一式を何倍にするか」の素の値を取る。
     //    ⚠ **1.0 のままなら、その人は農家の power を持っていない**（誰でも通る道なので）。
     float value = dropMultiplier(player);
     boolean isFarmer = value > 1.0F;
@@ -97,12 +97,12 @@ public final class HarvestWithEaseBonus {
   }
 
   /**
-   * 上流の {@code additionalDrop} と同じ計算で「一式を何回ぶん落とすか」を出す。
+   * 元の MOD の {@code additionalDrop} と同じ計算で「一式を何回ぶん落とすか」を出す。
    *
-   * <p>⚠ <b>ここで乱数を引く。</b> 上流と同じく、値の小数部が当たりの確率。
+   * <p>⚠ <b>ここで乱数を引く。</b> 元の MOD と同じく、値の小数部が当たりの確率。
    *
    * <p>⚠ <b>ブロックの条件は見ていない</b>（{@code modify} の3引数版を使っている）。
-   * 上流は {@code harvestable_crops}（{@code instanceof CropBlock} かつ最大成長）で
+   * 元の MOD は {@code harvestable_crops}（{@code instanceof CropBlock} かつ最大成長）で
    * 絞っているが、<b>このイベント自体が「熟した作物を右クリックした」ときしか飛ばない</b>ので
    * 条件は既に満たされている。
    * ⚠ 条件を見るには {@code ConfiguredBlockCondition} が要り、

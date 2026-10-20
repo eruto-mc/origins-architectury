@@ -33,7 +33,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * ⚠⚠ <b>{@code ForgeHooks.onLivingUseTotem} を1度も呼んでいない</b>。
  * ⚠ だから<b>バニラの本体ごと飛ばされ、当部の口は開かないまま</b>だった。
  *
- * <p>⚠ <b>これは当部で5件目の同じ型</b>——上流やバニラの構造を別の MOD が差し替えていて、
+ * <p>⚠ <b>これは当部で5件目の同じ型</b>——元の MOD やバニラの構造を別の MOD が差し替えていて、
  * そこにぶら下げた仕掛けが黙って死ぬ（農夫・木こり・鍛冶屋・聖職者、そしてこれ）。
  *
  * <h2>やり方（当てる場所を、奪われない所へ移した）</h2>
@@ -58,9 +58,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  *
  * <h2>⚠⚠ 判定をコピーしていない</h2>
  *
- * <p>⚠ 1度目は上流の判定を<b>自分の側へコピーして</b>いた。⚠⚠ <b>コピーするとずれる。</b>
+ * <p>⚠ 1度目は元の MOD の判定を<b>自分の側へコピーして</b>いた。⚠⚠ <b>コピーするとずれる。</b>
  * ⚠ ここでは {@code PreventDeathPower.tryPreventDeath} を<b>そのまま呼ぶ</b>。
- * 上流の handler が呼ぶのと同じ関数なので、⚠ <b>条件の食い違いが原理的に起きない</b>。
+ * 元の MOD の handler が呼ぶのと同じ関数なので、⚠ <b>条件の食い違いが原理的に起きない</b>。
  * ⚠ 真を返したときだけ打ち切る——<b>蘇りが実際に走った時だけ、damage を無かったことにする</b>。
  *
  * <p>⚠ 蘇りが働かないとき（腐肉と骨が満ちていない・そもそも持っていない）は<b>何もしない</b>。
@@ -85,7 +85,7 @@ public final class UndyingBeforeTotem {
         || event.getAmount() < player.getHealth()) {
       return;
     }
-    // ⚠⚠ **上流の関数をそのまま呼ぶ。** 真＝蘇りが走った（体力1・溜めた分は空・回復と効果）。
+    // ⚠⚠ **元の MOD の関数をそのまま呼ぶ。** 真＝蘇りが走った（体力1・溜めた分は空・回復と効果）。
     if (PreventDeathPower.tryPreventDeath(player, event.getSource(), event.getAmount())) {
       // ⚠ 打ち切る＝体力を引かない。⚠ **死なないので、トーテムの判定へ進まない。**
       event.setCanceled(true);

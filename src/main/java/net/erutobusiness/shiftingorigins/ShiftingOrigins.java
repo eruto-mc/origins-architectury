@@ -27,7 +27,7 @@ public final class ShiftingOrigins {
   /**
    * 鉱脈用の一括破壊 power。Origins Classes の `MultiMinePower` を**そのまま使い、
    * 探索だけ差し替える**（`apply` は `instanceof MultiMinePower` で工場を拾うので、
-   * こちらの工場も同じ経路で動く）。木こりは上流のまま触らない。
+   * こちらの工場も同じ経路で動く）。木こりは元の MOD のまま触らない。
    */
   public static final net.minecraftforge.registries.DeferredRegister<
       io.github.edwinmindcraft.apoli.api.power.factory.PowerFactory<?>> POWER_FACTORIES =
@@ -144,7 +144,7 @@ public final class ShiftingOrigins {
    * <p>⚠ <b>なぜ見分けが要るか</b>: {@code apoli:simple} を当部は2通りに使っていた。
    * <ul>
    *   <li>働いているのは Java の側で、JSON は<b>一覧に名前を出すための印</b>（生きている）</li>
-   *   <li>上流の能力を<b>殺すため</b>に無害な内容で上書きした残骸（何も働かない）</li>
+   *   <li>元の MOD の能力を<b>殺すため</b>に無害な内容で上書きした残骸（何も働かない）</li>
    * </ul>
    * ⚠⚠ <b>JSON を見ただけでは、この2つを見分けられなかった。</b> 実際
    * {@code origins-classes:explorer_kit}（開始装備を殺した残骸）は、
@@ -226,7 +226,7 @@ public final class ShiftingOrigins {
    * 飲む物か（使うときの動きが「飲む」）——2026-09-24・あなたの判断「飲み物は飲めるべき」。
    *
    * <p>⚠ 肉食（{@code origins:carnivore}）の「肉しか食べられない」から飲み物を外すのに使う
-   * （上書きは {@code origins_setup/build.py}）。⚠ 上流の肉食は「食べ物で肉でない物」を全部止めるので、
+   * （上書きは {@code origins_setup/build.py}）。⚠ 元の MOD の肉食は「食べ物で肉でない物」を全部止めるので、
    * ⚠ <b>ワイン・お茶・コーヒーも止まっていた</b>。
    *
    * <p>⚠ <b>名前の一覧ではなく動きで見る。</b> 一覧（{@code origins:ignore_diet}）に並べると、
@@ -274,7 +274,7 @@ public final class ShiftingOrigins {
     // ⚠ `[種族・職業]` を Tab とサイドバーにだけ出す。名札・チャット・死亡メッセージには出さない。
     //   ⚠ 止め方は config の nameLabels.enabled（datapack 側が数秒で元へ戻る）。理由は NameLabels。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(NameLabels.class);
-    // ⚠ 精気吸収がアンデッドから吸えていた（上流の説明は「効かない」と書いているのに実装が無い）
+    // ⚠ 精気吸収がアンデッドから吸えていた（作者の置き場の説明は「効かない」と書いているのに実装が無い）
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(SiphonGuard.class);
     // ⚠ プレイヤーが配った悪い効果（Pixie のニセの爆発・Revenant の骨の壁の雲）で倒れた相手に、
     //   使った人を「やった人」として記録する（死亡メッセージの名前・経験値・プレイヤーが倒したときだけの落とし物）。
@@ -285,7 +285,7 @@ public final class ShiftingOrigins {
     //   ⚠ **鍛冶型は mixin/SmithingMenuMixin**、⚠ **炉の2倍は mixin/BoundTickingBlockEntityMixin**。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(BlacksmithTools.class);
     // ⚠ 商人の在庫（`TradeWithVillagerEvent`）。⚠ mixin ではなく Forge のイベント——
-    //   ⚠ 上流 origins-classes が mixin なのは、⚠⚠ **47.1 にこのイベントが無かったから**。
+    //   ⚠ 元の MOD origins-classes が mixin なのは、⚠⚠ **47.1 にこのイベントが無かったから**。
     net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(MerchantStock.class);
     // ⚠ 溶岩入りの瓶（ブレイズボーンの水）は **Mixin 側**で拾う（`mixin/ItemMixin`）。
     //   ⚠ イベントで拾うと**啜るモーションが出ない**ので、ここには登録しない。
@@ -503,7 +503,7 @@ public final class ShiftingOrigins {
           .define("enabled", true);
       b.pop();
 
-      // ⚠ 板の増量は、上流の power が作業台で1枚も増やせていなかったため当部で作り直した。
+      // ⚠ 板の増量は、元の MOD の power が作業台で1枚も増やせていなかったため当部で作り直した。
       //   ⚠ 理由の全文は LumberjackPlanks の説明（Visual Workbench が容器を差し替えている）。
       b.comment("The lumberjack class. Upstream's more_planks_from_logs is an",
               "apoli:modify_crafting power, and its ModifiedCraftingRecipe bails out unless the",
@@ -530,7 +530,7 @@ public final class ShiftingOrigins {
           .defineInRange("saplingMaxSteps", 8, 1, 64);
       b.pop();
 
-      // ⚠ どちらも「上流の実装が前提にしている vanilla の器を、別の MOD が差し替えた」型。
+      // ⚠ どちらも「元の MOD の実装が前提にしている vanilla の器を、別の MOD が差し替えた」型。
       //   ⚠ 木こりと同じ形で、2026-09-05 の総当たり（selection/audits/class-powers-alive）で出た。
       b.comment("The cleric (2026-09-09: enchanting moved to the librarian, brewing added).")
           .push("cleric");

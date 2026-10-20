@@ -46,7 +46,7 @@ import net.minecraftforge.fml.common.Mod;
  * {@code LivingEntity#completeUsingItem} で発火し、<b>{@code FoodData#eat} へ入る前</b>に通る。
  * 誰が {@code eat} を取り消しても関係なく<b>1回だけ</b>呼ばれる。
  *
- * <p>⚠ <b>中身は自作しない。</b> 印の読み取りも効果の実行も上流のまま
+ * <p>⚠ <b>中身は自作しない。</b> 印の読み取りも効果の実行も元の MOD のまま
  * （{@code ModifyFoodPower.getValidPowers} → {@code execute}）。
  * 当部が決めているのは<b>いつ呼ぶか</b>だけ。
  *
@@ -110,7 +110,7 @@ public final class CookFeast {
     if (fromMark.isEmpty()) {
       return;
     }
-    // ⚠ item_condition の照合は execute の中で上流がやる
+    // ⚠ item_condition の照合は execute の中で元の MOD がやる
     ModifyFoodPower.execute(fromMark, player, player.level(), stack);
   }
 

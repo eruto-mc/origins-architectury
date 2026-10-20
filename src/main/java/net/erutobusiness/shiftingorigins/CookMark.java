@@ -16,13 +16,13 @@ import org.slf4j.LoggerFactory;
 /**
  * 「料理人が作った食べ物」に印を押す。
  *
- * <p>⚠ <b>印の形式も、食べたときの読み取りも、上流のまま使う。</b>
+ * <p>⚠ <b>印の形式も、食べたときの読み取りも、元の MOD のまま使う。</b>
  * 押すのは {@code ModifyCraftedFoodPower#modify}（NBT `OriginsClasses.ModifyFoodPowers` に
  * power の ID を並べる）、読むのは {@code ModifyFoodPowerMixin}。
  * 当部が足すのは<b>どこから押すか</b>だけ。⚠ 同じ役割の物を二重に作らない。
  *
  * <p>⚠ <b>なぜ「出口」を押さえるのか（2026-08-09 の調査）</b>:
- * 上流は調理台ごとに mixin を当てている（バニラの {@code ResultSlot} と
+ * 作者は調理台ごとに mixin を当てている（バニラの {@code ResultSlot} と
  * {@code FurnaceResultSlot}、Farmer's Delight、Tetra）。
  * ⚠ <b>当部は Farmer's Delight も Tetra も入れていない</b>ので、
  * 料理MOD 12種・67 のレシピ型のうち<b>届いていたのは作業台とかまど系の5型だけ</b>だった。
@@ -184,10 +184,10 @@ public final class CookMark {
   }
 
   /**
-   * 印を押す。⚠ <b>食べ物でなければ何もしない</b>（判定は上流の power の item_condition）。
+   * 印を押す。⚠ <b>食べ物でなければ何もしない</b>（判定は元の MOD の power の item_condition）。
    *
    * <p>⚠ <b>種別は {@code CRAFTING} を渡す。</b> 当部は「どの台か」で出し分けないので、
-   * 上流が持つ5種のうち一番基本のものへ寄せる。
+   * 元の MOD が持つ5種のうち一番基本のものへ寄せる。
    * ⚠ datapack 側の {@code crafting_result_type} がこれを含んでいないと発火しない。
    */
   public static void stamp(ServerPlayer player, ItemStack stack) {

@@ -31,7 +31,7 @@ import java.util.Comparator;
  *
  * 死亡メッセージに使った人の名前が出ず、倒した敵は経験値も、プレイヤーが倒したときだけの落とし物も出さなかった。
  *
- * <h2>やり方（上流の定義は書き換えない）</h2>
+ * <h2>やり方（元の MOD の定義は書き換えない）</h2>
  *
  * <ol>
  *   <li>{@code MobEffectEvent.Added} で、効果を配った元（{@code getEffectSource()}）を見る。

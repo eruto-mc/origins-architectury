@@ -9,12 +9,12 @@ import net.minecraft.world.item.ItemStack;
 /**
  * 木こりが丸太から板を作ると、枚数が増える（2026-09-05）。
  *
- * <p>⚠⚠ <b>なぜ当部で作り直したか</b>: 上流の {@code origins-classes:more_planks_from_logs}
+ * <p>⚠⚠ <b>なぜ当部で作り直したか</b>: 元の MOD の {@code origins-classes:more_planks_from_logs}
  * （「丸太を無駄にしない」）は <b>作業台では1枚も増えていなかった</b>。
  * 部員から「動作していない」と報告が来て、実物を辿って分かった:
  *
  * <ol>
- *   <li>上流の実体は {@code apoli:modify_crafting} ＝ {@code ModifiedCraftingRecipe} という
+ *   <li>元の MOD の実体は {@code apoli:modify_crafting} ＝ {@code ModifiedCraftingRecipe} という
  *       <b>動的なレシピ</b>で、盤面を見て産物を差し替える</li>
  *   <li>その {@code matches()} と {@code assemble()} は<b>最初の1行</b>が
  *       {@code inv instanceof TransientCraftingContainer} で、違えば false ／ 空を返す</li>
@@ -41,9 +41,9 @@ import net.minecraft.world.item.ItemStack;
  * Visual Workbench の {@code ModCraftingMenu} も同じ静的メソッド（{@code m_150546_}）を呼ぶ
  * （どちらもバイト列で確認）。
  *
- * <p>⚠ <b>上流の power は無害な定義で上書きしてある</b>
+ * <p>⚠ <b>元の MOD の power は無害な定義で上書きしてある</b>
  * （{@code data/origins-classes/powers/more_planks_from_logs.json} の
- * {@code loading_priority: 100}）。⚠ そうしないと、2×2 では上流が働いて 6 枚にした上へ
+ * {@code loading_priority: 100}）。⚠ そうしないと、2×2 では元の MOD が働いて 6 枚にした上へ
  * こちらが 2 枚足し、<b>8 枚</b>になりうる。⚠ {@code hidden} は立てていないので、
  * 能力の一覧と日本語の説明はこれまでどおり出る。
  */
@@ -58,10 +58,10 @@ public final class LumberjackPlanks {
    * <p>⚠ 判定の順は<b>安い順</b>: 枚数の設定 → 産物のタグ → 盤面 → 職業。
    * ⚠ 職業の読み出しは capability を触るので最後に置く（クラフト画面は1操作で何度も走る）。
    *
-   * <p>⚠ <b>上流は「板なら無条件に 6 枚」だった</b>が、ここは
+   * <p>⚠ <b>元の MOD は「板なら無条件に 6 枚」だった</b>が、ここは
    * <b>盤面が丸太1本だけのとき</b>に限って足す。⚠ 部員へ配っている日本語が
    * 「丸太1本から、板が2枚多く取れる」なので、<b>文のとおりの条件</b>にした
-   * （上流の書き方だと、板を1枚だけ返す MOD のレシピまで 6 枚になる）。
+   * （元の MOD の書き方だと、板を1枚だけ返す MOD のレシピまで 6 枚になる）。
    */
   public static ItemStack bonus(final ItemStack result, final Player player,
       final CraftingContainer grid) {

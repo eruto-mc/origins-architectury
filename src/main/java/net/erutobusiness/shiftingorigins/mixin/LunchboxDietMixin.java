@@ -17,13 +17,13 @@ import org.spongepowered.asm.mixin.injection.At;
  * 弁当箱（SolApplePie の弁当袋・弁当箱・金の弁当箱）に、<b>持ち主が口にできる物だけ</b>を選ばせる
  * （2026-09-24・あなたの判断「飛ばせるのいいね」）。
  *
- * <p>⚠⚠ <b>上流の弁当箱は食事の制限を見ない。</b>中身を選ぶ {@code getBestFoodSlot} は
+ * <p>⚠⚠ <b>元の MOD の弁当箱は食事の制限を見ない。</b>中身を選ぶ {@code getBestFoodSlot} は
  * 「食べ物で、空でない物のうち、SolApplePie の点が一番上がる物」を選ぶだけで、
  * ⚠ 選んだ物を {@code ItemStack.finishUsingItem} で<b>直に</b>食べさせる。
  * ⚠ Apoli の「使わせない」（肉食・菜食）は<b>右クリックの入口</b>で止める作りなので、
  * ⚠⚠ <b>弁当箱を通すと素通りする</b>。
  *
- * <p>⚠ 上流はその穴を「制限食の種族には弁当箱を使わせない」で塞ぐつもりでいた
+ * <p>⚠ 元の MOD はその穴を「制限食の種族には弁当箱を使わせない」で塞ぐつもりでいた
  * （{@code processRightClick} が {@code Origins.hasRestrictedDiet} を見て何もしない）。
  * ⚠ ただしその判定は、種族を文字にした物に {@code "[origins:vegetarian]"} などが含まれるかで見る。
  * ⚠⚠ <b>2026-09-24 の実測で、エルフ（菜食は種族を選んだときに後から付く）は弁当箱から肉を食べられた</b>
@@ -68,7 +68,7 @@ public abstract class LunchboxDietMixin {
     return original.call(food) && !PreventItemActionPower.isUsagePrevented(player, food);
   }
 
-  // ⚠ `original` は呼ばない——上流の「制限食か」は、ここで置き換える問いと別物なので要らない。
+  // ⚠ `original` は呼ばない——元の MOD の「制限食か」は、ここで置き換える問いと別物なので要らない。
   @WrapOperation(method = "processRightClick", at = @At(value = "INVOKE",
       target = "Lcom/tarinoita/solsweetpotato/integration/Origins;hasRestrictedDiet(Lnet/minecraft/world/entity/player/Player;)Z"))
   private boolean shiftingorigins$nothingToEat(final Player player,

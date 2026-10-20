@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
  * 鍛冶屋の「効率的な修理」を、作業台でも働かせる（2026-09-05）。
  *
  * <p>⚠⚠ <b>木こりの「丸太を無駄にしない」とまったく同じ形の不具合。</b>
- * 上流の {@code RepairItemRecipeMixin} は
+ * 元の MOD の {@code RepairItemRecipeMixin} は
  *
  * <pre>
  *   if (container instanceof TransientCraftingContainer tr) { …power を掛ける… }
@@ -36,11 +36,11 @@ import net.minecraft.world.item.ItemStack;
  *   産物の傷 = max(最大 - 残り, 0)
  * </pre>
  *
- * ⚠ 上流の power が変えるのは<b>この 5 だけ</b>（{@code modify_combine_repair_durability}）。
+ * ⚠ 元の MOD の power が変えるのは<b>この 5 だけ</b>（{@code modify_combine_repair_durability}）。
  * 鍛冶屋の定義は {@code multiply_base 1.0} なので 5 → 10 になる。
  * ⚠ 数字を自分で決めない——power から採るので、datapack を変えたらこちらも追随する。
  *
- * <p>⚠ <b>二重に掛けない。</b> 器が vanilla のものなら上流が既に掛けているので、何もしない。
+ * <p>⚠ <b>二重に掛けない。</b> 器が vanilla のものなら元の MOD が既に掛けているので、何もしない。
  */
 public final class BlacksmithRepair {
 
@@ -60,7 +60,7 @@ public final class BlacksmithRepair {
         || result.isEmpty() || !result.isDamageableItem()) {
       return result;
     }
-    // ⚠ vanilla の器なら上流の RepairItemRecipeMixin が既に掛けている。触ると二重になる。
+    // ⚠ vanilla の器なら元の MOD の RepairItemRecipeMixin が既に掛けている。触ると二重になる。
     if (grid instanceof TransientCraftingContainer || !(player instanceof ServerPlayer server)) {
       return result;
     }

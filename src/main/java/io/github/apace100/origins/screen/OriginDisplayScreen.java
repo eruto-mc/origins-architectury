@@ -430,7 +430,7 @@ public class OriginDisplayScreen extends Screen {
 	/**
 	 * eruto patch: 能力を何件飛ばしたかを、種族ごとに1回だけ記録へ出す。
 	 *
-	 * <p>⚠⚠ 上流は3つの理由（{@code !isBound()} ／ {@code hidden} ／ id が引けない）で
+	 * <p>⚠⚠ 本家は3つの理由（{@code !isBound()} ／ {@code hidden} ／ id が引けない）で
 	 * 能力を飛ばすが、⚠ <b>どれも黙って飛ばす</b>。画面には「説明文で終わっている」としか
 	 * 見えず、⚠ <b>ログにも1行も出ない</b>。
 	 *
@@ -442,7 +442,7 @@ public class OriginDisplayScreen extends Screen {
 		// 鳴らす条件は2つ:
 		//
 		//   ⑴ 解決できない／id が引けない が1件でもある
-		//        … ⚠ 上流が黙って飛ばす形。
+		//        … ⚠ 本家が黙って飛ばす形。
 		//   ⑵ ⚠⚠ **一覧そのものが空**（raw == 0）
 		//        … ⚠ 2026-08-27 の走行で `S2CDynamicRegistryPacket.decode` の中の
 		//          `ImmutableList$Builder.add(null)` が NullPointerException になり、

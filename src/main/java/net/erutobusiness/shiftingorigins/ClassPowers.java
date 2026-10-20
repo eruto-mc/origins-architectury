@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
  * `data/origins-classes/origins/<職業>.json` を上書きして能力を差し替えていたが、
  * **実測したら1つも効いていなかった**。datapack 自体は有効
  * （`/datapack list enabled` に `file/origins_unlock…（ワールド）` が出る）なのに、
- * 職業の中身だけ上流の定義が使われる。
+ * 職業の中身だけ元の MOD の定義が使われる。
  *
  * <pre>
- *   鉱夫   期待: 上流2つ ＋ world3:vein_mining   実際: 上流2つだけ
+ *   鉱夫   期待: 元の MOD の2つ ＋ world3:vein_mining   実際: 元の MOD の2つだけ
  *   探索者 期待: world3:keen_eye ＋ 疾走         実際: explorer_kit ＋ 疾走
  * </pre>
  *
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * 職業を付け替えるたびに地図が9枚増えるため、常時効果へ差し替える決定を
  * 2026-08-02 にしていた。それが効いていなかった。
  *
- * <p>ここでは**上流の定義を書き換えず、足す/外すだけ**を行う。上流が職業の中身を変えても、
+ * <p>ここでは**元の MOD の定義を書き換えず、足す/外すだけ**を行う。元の MOD が職業の中身を変えても、
  * こちらは「その職業のときに何を足すか」しか持たないので黙って壊れにくい。
  */
 public final class ClassPowers {
@@ -41,9 +41,9 @@ public final class ClassPowers {
    * (種族・職業, 足す能力)
    *
    * <p>⚠ **「外す」は 2026-08-04 に廃止した。** `removePower` は毎秒呼べていて source も
-   * 正しかったのに `power has` が真のままだった＝**上流が付け直していて勝てない**
+   * 正しかったのに `power has` が真のままだった＝**元の MOD が付け直していて勝てない**
    * （台本 shifting-origins の逆向き判定3本が2回とも NG）。
-   * いまは**上流の power の定義そのものを無害な内容で上書きする**
+   * いまは**元の MOD の power の定義そのものを無害な内容で上書きする**
    * （`data/origins/powers/*.json` に `loading_priority: 100`）。
    * これは Origins の公式ドキュメントが案内している正規のやり方:
    * 「Higher numbers mean it's loaded later, which means it will override those with
@@ -60,7 +60,7 @@ public final class ClassPowers {
       new Rule("origins-classes:cleric",
           List.of("shiftingorigins:potion_sharing")),
       // ⚠ 2026-09-06 に足した分（職業を強くする側の見直し）。
-      //   ⚠ **上流の職業定義には触らない**——ここで配るので、上流が中身を変えても壊れない。
+      //   ⚠ **元の MOD の職業定義には触らない**——ここで配るので、元の MOD が中身を変えても壊れない。
       new Rule("origins-classes:warrior",
           List.of("shiftingorigins:shield_master", "shiftingorigins:swift_strikes",
               "shiftingorigins:riposte", "shiftingorigins:last_stand")),
@@ -104,7 +104,7 @@ public final class ClassPowers {
           LOG.info("[paced] {} に {} を配った（{}）", player.getGameProfile().getName(), id,
               rule.origin());
         } else if (!isThisClass && has) {
-          // 自分が配ったぶん（source=SOURCE）は自分で外せる。上流が配ったものとは別。
+          // 自分が配ったぶん（source=SOURCE）は自分で外せる。元の MOD が配ったものとは別。
           container.removePower(power, SOURCE);
         }
       }
@@ -145,7 +145,7 @@ public final class ClassPowers {
    * そのプレイヤーが商人か。
    *
    * <p>⚠ 使う側は {@link MerchantStock}（取引の在庫が確率で減らない）。
-   * ⚠ 上流の「尽きない品揃え」は無害な定義で上書きしてあるので、
+   * ⚠ 元の MOD の「尽きない品揃え」は無害な定義で上書きしてあるので、
    * ⚠⚠ <b>いま商人の在庫を決めているのはここを通る道だけ</b>。
    */
   public static boolean isMerchant(ServerPlayer player) {

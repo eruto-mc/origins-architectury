@@ -57,7 +57,7 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 		//    （＝1本残らず未結合）だった。⚠ 画面には**説明文までしか出ず、能力が1つも並ばない。**
 		//
 		//    ⚠ **Oキーの画面（`ViewOriginScreen:42`）は最初から引き直している。**
-		//    ⚠ こちらだけが引き直していなかった——⚠⚠ **上流の中の食い違い**なので、揃える。
+		//    ⚠ こちらだけが引き直していなかった——⚠⚠ **本家の中の食い違い**なので、揃える。
 		//
 		//    ⚠ 能力（`Origin` の中の `HolderSet`）も、引き直した種族の物になるので一緒に直る
 		//    （⚠ 能力が古かったのは、⚠ **古い種族が古い能力を抱えていた**ため）。
@@ -111,11 +111,11 @@ public class ChooseOriginScreen extends OriginDisplayScreen {
 	/**
 	 * eruto patch: <b>やめてよい場面だけ</b> Esc を開ける。
 	 *
-	 * <p>⚠ 上流は {@code false} 固定で、閉じる手段がまったく無い。理由はある——
+	 * <p>⚠ 本家は {@code false} 固定で、閉じる手段がまったく無い。理由はある——
 	 * 層を空にしたまま閉じると {@code hasAllOrigins()} が偽のまま残り、
 	 * {@code SelectionInvulnerabilityMixin} が全ダメージを無効にする＝<b>無敵で詰む</b>。
 	 *
-	 * <p>⚠⚠ だから<b>既定は上流のまま（閉じられない）</b>で、
+	 * <p>⚠⚠ だから<b>既定は本家のまま（閉じられない）</b>で、
 	 * サーバーが「珠を使った直後」だけ印を立てる（{@link CancelClient}）。
 	 */
 	@Override

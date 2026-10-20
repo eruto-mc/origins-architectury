@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *                                     checkAutoChoosingLayers(true) で既定を入れる
  * </pre>
  *
- * <p><b>既定の種族を自分で引き直さない。</b>上流の入室処理
+ * <p><b>既定の種族を自分で引き直さない。</b>元の MOD の入室処理
  * （{@code OriginsEventHandler.onLogin}）と<b>同じ呼び出しと同じ順</b>を使う。
  * 層の {@code default_origin} を読む場所を二重に持つと、片方だけ腐る。
  *

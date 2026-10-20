@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  *
  * <pre>
  *   珠を使う  ─ Mixin(HEAD) ─→ remember(): いまの種族一覧と珠を控える
- *              ─ 上流の処理 ─→ 層を空にして選択画面を開かせる
+ *              ─ 元の MOD の処理 ─→ 層を空にして選択画面を開かせる
  *              ─ Mixin(RETURN) → announce(): クライアントへ「やめられる」と伝える
  *   Esc / ×   ────────────→ CancelRequest ─→ cancel(): 控えた種族へ戻し、珠を返す
  * </pre>
@@ -101,7 +101,7 @@ public final class OriginChangeCancel {
       if (restored == 0) {
         return;
       }
-      // 上流の珠と同じ順で伝える（同期の便り → 容器の同期）
+      // 元の MOD の珠と同じ順で伝える（同期の便り → 容器の同期）
       OriginsCommon.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
           container.getSynchronizationPacket());
       container.synchronize();

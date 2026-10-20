@@ -35,7 +35,7 @@ import toughasnails.api.thirst.ThirstHelper;
  *
  * <h2>回復量</h2>
  *
- * ⚠ <b>上流の「浄水の瓶」と同じ値</b>（tag を読んで採った・自分で決めた数字ではない）:
+ * ⚠ <b>元の MOD の「浄水の瓶」と同じ値</b>（tag を読んで採った・自分で決めた数字ではない）:
  * {@code thirst/5_thirst_drinks} と {@code hydration/80_hydration_drinks} に
  * {@code toughasnails:purified_water_bottle} が入っている。
  */

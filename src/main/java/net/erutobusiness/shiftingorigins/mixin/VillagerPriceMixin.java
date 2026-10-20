@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * {@code specialPriceDiff} だけで、それを決めるのがこのメソッド。
  * ⚠ Forge のイベントは無い（{@code Villager.java.patch} を全部読んで確かめた）。
  *
- * <p>⚠ <b>末尾に入る。</b> 上流が評判と村の英雄のぶんを入れ終えた後に足すので、
+ * <p>⚠ <b>末尾に入る。</b> 元の MOD が評判と村の英雄のぶんを入れ終えた後に足すので、
  * ⚠ <b>あちらの値引きを消さない</b>。
  *
  * <p>⚠ 触るのは<b>バニラの型だけ</b>なので、取引まわりの MOD が変わっても壊れない。
